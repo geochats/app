@@ -88,7 +88,7 @@ func (b *Bot) Process(msg *tdlib.Message) (*types.Point, error) {
 		b.logger.Warn("tdlib.MessageUnsupportedType")
 		return nil, nil
 	default:
-		b.logger.Warn("unsupported update with content type `%s`", msg.Content.GetMessageContentEnum())
+		b.logger.Warnf("unsupported update with content type `%s`", msg.Content.GetMessageContentEnum())
 	}
 	return b.store.UpdatePoint(point)
 }

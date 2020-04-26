@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/boltdb/bolt"
 	"geochats/pkg/types"
+	"github.com/boltdb/bolt"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -60,7 +60,7 @@ func (b *BoltStorage) UpdatePoint(diff *types.Point) (*types.Point, error) {
 	var merged *types.Point
 	return merged, b.db.Update(func(tx *bolt.Tx) error {
 		buc := tx.Bucket(b.pointsBucketName)
-		v := buc.Get([]byte(fmt.Sprintf("%d", diff.ChatID)))
+		v := buc.Get([]byte(diff.ChatID))
 		if v == nil {
 			merged = diff
 		} else {
@@ -83,7 +83,7 @@ func (b *BoltStorage) UpdatePoint(diff *types.Point) (*types.Point, error) {
 		if err := gob.NewEncoder(&b).Encode(merged); err != nil {
 			return fmt.Errorf("failed gob encode Point after merge: %v", err)
 		}
-		if err := buc.Put([]byte(fmt.Sprintf("%d", diff.ChatID)), b.Bytes()); err != nil {
+		if err := buc.Put([]byte(diff.ChatID), b.Bytes()); err != nil {
 			return fmt.Errorf("can't put Point value to bucket: %v", err)
 		}
 		return nil
