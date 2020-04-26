@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/Arman92/go-tdlib"
-	log "github.com/sirupsen/logrus"
+	"geochats/pkg/bot"
 	"geochats/pkg/client"
+	"geochats/pkg/client/downloader"
 	"geochats/pkg/collector"
 	"geochats/pkg/collector/loaders"
 	"geochats/pkg/storage"
 	"geochats/pkg/web_server"
+	"github.com/Arman92/go-tdlib"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"time"
@@ -17,6 +19,7 @@ import (
 func main() {
 	log.SetLevel(log.InfoLevel)
 	workDir := ensureEnv("WORK_DIR")
+	publicDir := ensureEnv("PUBLIC_DIR")
 	verbose := os.Getenv("VERBOSE") != ""
 	tgAppID := ensureEnv("TG_APP_ID")
 	tgAppHash := ensureEnv("TG_APP_HASH")
@@ -49,13 +52,20 @@ func main() {
 		log.Panicf("can't auth tg bot: %v", err)
 	}
 
-	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/tmp", workDir))
-
 	store, err := storage.New(dbFile)
 	if err != nil {
 		log.Panicf("can't create storage: %v", err)
 	}
 
+	dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c/", publicDir), "/c/")
+	b := bot.New(cl, store, dl, logger)
+	go func() {
+		if err := b.Run(); err != nil {
+			log.Fatalf("error in bot run: %v", err)
+		}
+	}()
+
+	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/tmp", workDir))
 	col := collector.New(cl, loader, store, logger)
 	go func() {
 		for {

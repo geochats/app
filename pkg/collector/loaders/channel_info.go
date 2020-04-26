@@ -7,6 +7,8 @@ import (
 	"geochats/pkg/client"
 	"geochats/pkg/client/downloader"
 	"geochats/pkg/types"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -61,7 +63,10 @@ func (e *ChannelInfoLoader) Export(name string) (*types.Group, error) {
 	info.MembersCount = sgi.MemberCount
 	info.Description = sgi.Description
 
-	dl := downloader.NewSyncDownloader(e.client, info, e.rootDir)
+	repl := strings.NewReplacer(string(os.PathSeparator), "", string(os.PathListSeparator), "")
+	dirName := repl.Replace(info.Username)
+
+	dl := downloader.NewSyncDownloader(e.client, dirName, e.rootDir)
 	if chat.Photo != nil {
 		if chat.Photo.Small != nil {
 			if err := dl.DownloadChannelFile(chat.Photo.Big, &info.Userpic); err != nil {

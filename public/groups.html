@@ -64,33 +64,14 @@
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
 </div>
-<div id="pointModal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-content">
-        <div class="box">
-            <article class="media">
-                <div class="media-content">
-                    <div class="content">
-                        <p class="image is-square">
-                            <img id="pointImage" class="has-ratio" style="max-width:100%;width:auto;max-height:100%;height:auto;" alt="">
-                        </p>
-                        <p id="pointDesc"></p>
-                    </div>
-                </div>
-            </article>
-        </div>
-    </div>
-    <button class="modal-close is-large" aria-label="close"></button>
-</div>
 
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
 <script type="text/javascript">
     const initialCoords = [88.78367097860782, 60.317092090457066];
     let addModalCoords;
 
-    loadData().then(function (data) {
-        const groupsVector = buildGroupsFeatures(data.Groups);
-        const pointsVector = buildPointsFeatures(data.Points);
+    loadGroups().then(function (groups) {
+        const vector = buildMarkers(groups);
         const map = new ol.Map({
             controls: [
                 new ol.control.Zoom(),
@@ -105,8 +86,7 @@
                         //url: "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                     }),
                 }),
-                groupsVector,
-                pointsVector
+                vector
             ],
             view: new ol.View({
                 center: ol.proj.fromLonLat(initialCoords),
@@ -124,23 +104,16 @@
         // });
 
         map.on('singleclick', function (evt) {
-            let found = false;
-            pointsVector.getFeatures(evt.pixel).then(function (features) {
+            vector.getFeatures(evt.pixel).then(function (features) {
+                const feature = features[0];
                 if (features.length) {
-                    showPointModal(features[0].get('group'))
-                    found = true;
+                    showJoinModal(feature.get('group'))
+                } else {
+                    addModalCoords = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326')
+                    byId('addModalCoords').value = addModalCoords;
+                    byId('addModal').classList.add("is-active");
                 }
             });
-            groupsVector.getFeatures(evt.pixel).then(function (features) {
-                if (features.length) {
-                    showJoinModal(features[0].get('group'))
-                    found = true;
-                }
-            });
-            if (!found) {
-                addModalCoords = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326')
-                showAddModal(addModalCoords);
-            }
         });
     })
 
@@ -176,7 +149,7 @@
         element.onclick = hideModals;
     });
 
-    function buildGroupsFeatures(groups) {
+    function buildMarkers(groups) {
         return new ol.layer.Vector({
             source: new ol.source.Vector({
                 features: groups.map(function (m) {
@@ -201,24 +174,6 @@
         });
     }
 
-    function buildPointsFeatures(points) {
-        return new ol.layer.Vector({
-            source: new ol.source.Vector({
-                features: points.map(function (m) {
-                    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.coords[1], m.coords[0]])));
-                    f.set("group", m);
-                    f.setStyle(new ol.style.Style({
-                        image: new ol.style.Circle({
-                            radius: 10,
-                            fill: new ol.style.Fill({color: '#ffdd57'})
-                        })
-                    }));
-                    return f;
-                })
-            })
-        });
-    }
-
     function byId(id) {
         return document.getElementById(id);
     }
@@ -227,7 +182,7 @@
         return document.getElementsByClassName(cl);
     }
 
-    function loadData() {
+    function loadGroups() {
         return fetch('/list', {
             method: 'GET',
             headers: {
@@ -260,12 +215,6 @@
         byId('joinDesc').innerHTML = data.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
         byId('joinLink').href = data.link;
         byId('joinModal').classList.add("is-active");
-    }
-
-    function showPointModal(data) {
-        byId('pointDesc').innerHTML = data.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
-        byId('pointImage').src = data.photo.Path;
-        byId('pointModal').classList.add("is-active");
     }
 
     function hideModals() {

@@ -3,13 +3,13 @@ package web_server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"geochats/pkg/client"
 	"geochats/pkg/collector/loaders"
 	"geochats/pkg/storage"
+	"geochats/pkg/types"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strings"
@@ -66,7 +66,7 @@ func (s *WebServer) handleAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req reqSpec
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			s.responseWithError(w, fmt.Errorf("cant' decode add request: %v", err))
+			s.responseWithErrorJSON(w, fmt.Errorf("cant' decode add request: %v", err))
 			return
 		}
 		defer func() { _ = r.Body.Close() }()
@@ -74,53 +74,54 @@ func (s *WebServer) handleAdd() http.HandlerFunc {
 		username := strings.Replace(req.Link, "https://t.me/", "", -1)
 		gr, err := s.loader.Export(username)
 		if err != nil {
-			s.responseWithError(w, fmt.Errorf("can't load tg info about group: %v", err))
+			s.responseWithErrorJSON(w, fmt.Errorf("can't load tg info about group: %v", err))
 			return
 		}
 
 		gr.Coords = req.Coords
 		if err := s.store.AddGroup(gr); err != nil {
-			s.responseWithError(w, fmt.Errorf("can't store new group: %v", err))
+			s.responseWithErrorJSON(w, fmt.Errorf("can't store new group: %v", err))
 			return
 		}
 
-		spew.Dump(gr)
-		s.responseWithSuccess(w, "{}")
+		s.responseWithSuccessJSON(w, true)
 	}
 }
 
 func (s *WebServer) handleList() http.HandlerFunc {
+	type resp struct {
+		Groups []types.Group
+		Points []types.Point
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
+		points, err := s.store.ListPoint()
+		if err != nil {
+			s.responseWithErrorJSON(w, fmt.Errorf("can't load points: %v", err))
+			return
+		}
+		completePoint := make([]types.Point, 0)
+		for _, p := range points {
+			s.logger.Infof("point: %#v", p)
+			if p.Complete() {
+				completePoint = append(completePoint, p)
+			}
+		}
+
 		groups, err := s.store.ListGroups()
 		if err != nil {
-			s.responseWithError(w, fmt.Errorf("can't load groups: %v", err))
+			s.responseWithErrorJSON(w, fmt.Errorf("can't load groups: %v", err))
 			return
 		}
-		if err := json.NewEncoder(w).Encode(groups); err != nil {
-			s.responseWithError(w, fmt.Errorf("cant' encode groups: %v", err))
-			return
-		}
+
+		s.responseWithSuccessJSON(w, resp{
+			Groups: groups,
+			Points: completePoint,
+		})
 	}
 }
 
 func (s *WebServer) handleHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		_, _ = w.Write([]byte("OK"))
-	}
-}
-
-func (s *WebServer) responseWithError(w http.ResponseWriter, err error) {
-	w.WriteHeader(400)
-	s.logger.Error(err)
-	if _, err := w.Write([]byte(err.Error())); err != nil {
-		s.logger.Error(err)
-	}
-}
-
-func (s *WebServer) responseWithSuccess(w http.ResponseWriter, payload string) {
-	w.WriteHeader(200)
-	if _, err := w.Write([]byte(payload)); err != nil {
-		s.logger.Error(err)
+		s.responseWithSuccessJSON(w, true)
 	}
 }

@@ -2,29 +2,27 @@ package downloader
 
 import (
 	"fmt"
+	"geochats/pkg/client"
 	"github.com/Arman92/go-tdlib"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
-	"geochats/pkg/client"
-	"geochats/pkg/types"
 )
 
 type SyncDownloader struct {
-	cl          client.AbstractClient
-	channelInfo *types.Group
-	rootDir     string
+	cl      client.AbstractClient
+	baseDir string
+	baseUrl string
 }
 
-func NewSyncDownloader(client client.AbstractClient, channelInfo *types.Group, rootDir string) Downloader {
+func NewSyncDownloader(client client.AbstractClient, baseDir string, baseUrl string) Downloader {
 	return &SyncDownloader{
-		cl:          client,
-		channelInfo: channelInfo,
-		rootDir:     rootDir,
+		cl:      client,
+		baseDir: baseDir,
+		baseUrl: baseUrl,
 	}
 }
 
@@ -116,10 +114,8 @@ func copyFile(src, dst string) error {
 }
 
 func (e *SyncDownloader) buildChannelFilePaths(file *tdlib.File) (string, string) {
-	repl := strings.NewReplacer(string(os.PathSeparator), "", string(os.PathListSeparator), "")
-	dirName := repl.Replace(e.channelInfo.Username)
-	publicPath := fmt.Sprintf("/c/%s/files/%s%s", dirName, file.Remote.Id, path.Ext(file.Local.Path))
-	fullPath := path.Clean(e.rootDir + publicPath)
+	publicPath := fmt.Sprintf("%s%s%s", e.baseUrl, file.Remote.Id, path.Ext(file.Local.Path))
+	fullPath := fmt.Sprintf("%s%s%s", e.baseDir, file.Remote.Id, path.Ext(file.Local.Path))
 	return publicPath, fullPath
 }
 

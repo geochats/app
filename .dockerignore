@@ -2,5 +2,5 @@ var
 kubernetes
 .DS_Store
 .idea
-!public/static
+public/c
 groups.db

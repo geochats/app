@@ -2,4 +2,5 @@ var
 .DS_Store
 .idea
 geochats
+public/c
 var/groups.db
