@@ -1,0 +1,7 @@
+var
+kubernetes
+.DS_Store
+.idea
+public
+!public/static
+groups.db
