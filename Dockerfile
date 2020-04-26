@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV \
     TERM=xterm-color \
-    TIME_ZONE="Europe/Kiev" \
+    TIME_ZONE="UTC" \
     CGO_ENABLED=1 \
     GOOS=linux \
     GOARCH=amd64 \
@@ -22,7 +22,8 @@ RUN \
     echo "## Prepare tdlib" && \
     apk add --no-cache gcc g++ zlib-dev openssl-dev libc6-compat && \
     apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
-    ln -s /usr/include /usr/local/include && ln -s /usr/lib /usr/local/lib
+    ln -s /usr/include /usr/local/include && \
+    ln -s /usr/lib /usr/local/lib
 ADD . .
 RUN \
     go env && \
@@ -36,8 +37,14 @@ RUN \
     echo "  ## Done"
 
 FROM golang:1.13.7-alpine3.11
-WORKDIR /app
-COPY --from=build /app/app ./app
+RUN apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
+    ln -s /usr/include /usr/local/include && \
+    ln -s /usr/lib /usr/local/lib && \
+    mkdir -p /app/var && \
+    chown -R nobody:nobody /app/var
+COPY --from=build /app/app /app/app
+COPY --from=build /app/public /app/public
 COPY --from=build /etc/localtime /etc/localtime
 USER nobody:nobody
+WORKDIR /app
 CMD ./app
