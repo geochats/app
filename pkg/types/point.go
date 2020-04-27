@@ -6,26 +6,24 @@ import (
 )
 
 type Point struct {
-	ChatID      string     `json:"id"`
-	Username    string    `json:"username"`
-	Photo       Image     `json:"photo"`
-	Coords      []float64 `json:"coords"`
-	Description string    `json:"description"`
+	ChatID    int64
+	Photo     Image
+	Latitude  float64
+	Longitude float64
+	MottoID   string
 }
 
-func NewPoint(chatId int64) *Point {
-	h := sha256.Sum256([]byte(fmt.Sprintf("%d", chatId)))
-	return &Point{
-		ChatID: fmt.Sprintf("%x", h),
-	}
+func (p *Point) PublicID() string {
+	h := sha256.Sum256([]byte(fmt.Sprintf("%d", p.ChatID)))
+	return fmt.Sprintf("%x", h)
 }
 
 func (p *Point) Complete() bool {
-	return p.Photo.Path != "" && len(p.Coords) > 0 && p.Description != ""
+	return p.Latitude != 0
 }
 
 type Image struct {
-	Width    int32
-	Height   int32
-	Path     string
+	Width  int32
+	Height int32
+	Path   string
 }

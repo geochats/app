@@ -2,25 +2,26 @@ package loaders
 
 import (
 	"fmt"
-	"github.com/Arman92/go-tdlib"
-	log "github.com/sirupsen/logrus"
 	"geochats/pkg/client"
 	"geochats/pkg/client/downloader"
 	"geochats/pkg/types"
+	"github.com/Arman92/go-tdlib"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strings"
-	"time"
 )
 
 type ChannelInfoLoader struct {
 	client  client.AbstractClient
-	rootDir string
+	baseDir string
+	baseUrl string
 }
 
-func NewChannelInfoLoader(client client.AbstractClient, rootDir string) *ChannelInfoLoader {
+func NewChannelInfoLoader(client client.AbstractClient, baseDir string, baseUrl string) *ChannelInfoLoader {
 	return &ChannelInfoLoader{
 		client:  client,
-		rootDir: rootDir,
+		baseDir: baseDir,
+		baseUrl: baseUrl,
 	}
 }
 
@@ -48,28 +49,21 @@ func (e *ChannelInfoLoader) Export(name string) (*types.Group, error) {
 	if sg.IsChannel {
 		return nil, fmt.Errorf("it's a channel, not a group")
 	}
-	info.SuperGroupID = sg.Id
 	info.Username = sg.Username
-	info.RegistrationDate = time.Unix(int64(sg.Date), 0)
 	log.Infof("super group loaded by id `%d`", sgt.SupergroupId)
 	sgi, err := e.client.GetSupergroupFullInfo(sgt.SupergroupId)
 	if err != nil {
 		return nil, fmt.Errorf("can't load supergroup: %v", err)
-	}
-	info.InviteLink = sgi.InviteLink
-	if info.InviteLink == "" {
-		info.InviteLink = fmt.Sprintf("https://t.me/%s", info.Username)
 	}
 	info.MembersCount = sgi.MemberCount
 	info.Description = sgi.Description
 
 	repl := strings.NewReplacer(string(os.PathSeparator), "", string(os.PathListSeparator), "")
 	dirName := repl.Replace(info.Username)
-
-	dl := downloader.NewSyncDownloader(e.client, dirName, e.rootDir)
+	dl := downloader.NewSyncDownloader(e.client, fmt.Sprintf("%s/%s/", e.baseDir, dirName), fmt.Sprintf("%s/%s/", e.baseDir, dirName))
 	if chat.Photo != nil {
 		if chat.Photo.Small != nil {
-			if err := dl.DownloadChannelFile(chat.Photo.Big, &info.Userpic); err != nil {
+			if err := dl.DownloadChannelFile(chat.Photo.Big, &info.Userpic.Path); err != nil {
 				return nil, fmt.Errorf("can't download chat photo: %v", err)
 			}
 		}

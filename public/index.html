@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hello Bulma!</title>
+    <title>Митинг.Линк</title>
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css"
           type="text/css">
@@ -14,34 +14,15 @@
 
 <body>
 <div id="map" class="map" style="width:100%;height:100%;position:fixed"></div>
-<div id="addModal" class="modal">
+<button id="helpButton" class="button is-danger" style="top:.5em;right:.5em;position:fixed">?</button>
+<div id="helpModal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
         <div class="box">
-            <div class="container">
-                <h1 class="title">Добавление группы</h1>
-                <script async src="https://telegram.org/js/telegram-widget.js?8" data-telegram-login="namiting_bot" data-size="large" data-auth-url="miting.link/auth" data-request-access="write"></script>
-                <fieldset disabled>
-                    <div class="field">
-                        <label class="label" for="addModalCoords">Координаты</label>
-                        <div class="control">
-                            <input id="addModalCoords" class="input" type="text" value="33.31231321, 55.1321312321">
-                        </div>
-                    </div>
-                </fieldset>
-                <div class="field">
-                    <label class="label" for="addModalLink">Ссылка на чат</label>
-                    <div class="control">
-                        <input id="addModalLink" class="input" type="text" placeholder="t.me/">
-                    </div>
-                </div>
-                <div class="field is-grouped">
-                    <div class="control">
-                        <button id="addModalSave" class="button is-danger">Получить код</button>
-                    </div>
-                </div>
-                <p id="addError" class="help is-danger"></p>
-            </div>
+            <h1 class="title">???</h1>
+            <p>Вы можете добавить митинг или одиночный пикет. И то и другое происходит через telegram-бот <a href="https://t.me/miting_link_bot">@miting_link_bot</a>.
+                Чтобы добавить пикет, отправьте ему команду <code>/piket</code>. Чтобы добавить митинг - <code>/miting</code>.
+            </p>
         </div>
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
@@ -72,7 +53,7 @@
                 <div class="media-content">
                     <div class="content">
                         <p class="image is-square">
-                            <img id="pointImage" class="has-ratio" style="max-width:100%;width:auto;max-height:100%;height:auto;" alt="">
+                            <img id="pointImage" class="has-ratio" style="max-width:100%;width:auto;max-height:100%;height:auto;" alt=""/>
                         </p>
                         <p id="pointDesc"></p>
                     </div>
@@ -84,13 +65,13 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList"></script>
 <script type="text/javascript">
     const initialCoords = [88.78367097860782, 60.317092090457066];
-    let addModalCoords;
 
     loadData().then(function (data) {
-        const groupsVector = buildGroupsFeatures(data.Groups);
-        const pointsVector = buildPointsFeatures(data.Points);
+        const groupsVector = buildGroupsFeatures(data.groups);
+        const pointsVector = buildPointsFeatures(data.points);
         const map = new ol.Map({
             controls: [
                 new ol.control.Zoom(),
@@ -100,9 +81,7 @@
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.OSM({
-                        //url: "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
-                        //url: "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
                     }),
                 }),
                 groupsVector,
@@ -125,49 +104,22 @@
 
         map.on('singleclick', function (evt) {
             let found = false;
-            pointsVector.getFeatures(evt.pixel).then(function (features) {
-                if (features.length) {
-                    showPointModal(features[0].get('group'))
-                    found = true;
-                }
-            });
+            // pointsVector.getFeatures(evt.pixel).then(function (features) {
+            //     if (features.length) {
+            //         showPointModal(features[0].get('group'))
+            //         found = true;
+            //     }
+            // });
             groupsVector.getFeatures(evt.pixel).then(function (features) {
                 if (features.length) {
                     showJoinModal(features[0].get('group'))
                     found = true;
                 }
             });
-            if (!found) {
-                addModalCoords = ol.proj.transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326')
-                showAddModal(addModalCoords);
-            }
         });
     })
 
-    byId('addModalSave').onclick = function () {
-        const link = byId('addModalLink').value;
-        if (!link) {
-            return;
-        }
-        fetch('/add', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                coords: addModalCoords,
-                link: link
-            })
-        })
-            .then((response) => response.json())
-            .then((js) => {
-                if (!js.success) {
-                    throw new Error(js.error);
-                }
-                document.location.reload(false);
-            })
-            .catch((error) => {
-                byId("addError").innerHTML = error;
-            });
-    };
+    byId('helpButton').onclick = showHelpModal;
 
     Array.from(byClass("modal-close")).forEach(element => {
         element.onclick = hideModals;
@@ -180,21 +132,10 @@
         return new ol.layer.Vector({
             source: new ol.source.Vector({
                 features: groups.map(function (m) {
-                    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat(m.coords)));
+                    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.longitude, m.latitude])));
                     f.set("group", m);
-                    f.setStyle(new ol.style.Style({
-                        image: new ol.style.Circle({
-                            radius: radius(m.count),
-                            stroke: new ol.style.Stroke({color: '#fff'}),
-                            fill: new ol.style.Fill({color: '#f14668'})
-                        }),
-                        text: new ol.style.Text({
-                            font: "12px sans-serif",
-                            text: m.count.toString(),
-                            fill: new ol.style.Fill({color: '#fff'})
-                        }),
-                        zIndex: m.count
-                    }));
+                    f.setStyle(buildStyle(m.count));
+                    console.log(f);
                     return f;
                 })
             })
@@ -205,17 +146,28 @@
         return new ol.layer.Vector({
             source: new ol.source.Vector({
                 features: points.map(function (m) {
-                    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.coords[1], m.coords[0]])));
+                    const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.longitude, m.latitude])));
                     f.set("group", m);
-                    f.setStyle(new ol.style.Style({
-                        image: new ol.style.Circle({
-                            radius: 10,
-                            fill: new ol.style.Fill({color: '#ffdd57'})
-                        })
-                    }));
+                    f.setStyle(buildStyle(1));
                     return f;
                 })
             })
+        });
+    }
+
+    function buildStyle(count) {
+        return new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: radius(count),
+                stroke: new ol.style.Stroke({color: '#fff'}),
+                fill: new ol.style.Fill({color: '#f14668'})
+            }),
+            text: new ol.style.Text({
+                font: "12px sans-serif",
+                text: count.toString(),
+                fill: new ol.style.Fill({color: '#fff'})
+            }),
+            zIndex: count
         });
     }
 
@@ -249,9 +201,8 @@
         return 10 + Math.log(count) * 3;
     }
 
-    function showAddModal(coords) {
-        byId('addModalCoords').value = coords;
-        byId('addModal').classList.add("is-active");
+    function showHelpModal() {
+        byId('helpModal').classList.add("is-active");
     }
 
     function showJoinModal(data) {
@@ -263,6 +214,7 @@
     }
 
     function showPointModal(data) {
+        console.log(data);
         byId('pointDesc').innerHTML = data.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
         byId('pointImage').src = data.photo.Path;
         byId('pointModal').classList.add("is-active");

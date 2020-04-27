@@ -57,15 +57,16 @@ func main() {
 		log.Panicf("can't create storage: %v", err)
 	}
 
-	dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c/", publicDir), "/c/")
-	b := bot.New(cl, store, dl, logger)
+	dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
+	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
+
+	b := bot.New(cl, store, loader, dl, logger)
 	go func() {
 		if err := b.Run(); err != nil {
 			log.Fatalf("error in bot run: %v", err)
 		}
 	}()
 
-	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/tmp", workDir))
 	col := collector.New(cl, loader, store, logger)
 	go func() {
 		for {
