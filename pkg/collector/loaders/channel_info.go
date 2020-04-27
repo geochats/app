@@ -34,7 +34,7 @@ func (e *ChannelInfoLoader) Export(name string) (*types.Group, error) {
 	if chat == nil {
 		return nil, fmt.Errorf("chat not found by name `%s`", name)
 	}
-	log.Infof("chat `%d` found by name `%s`", chat.Id, name)
+	log.Debugf("chat `%d` found by name `%s`", chat.Id, name)
 
 	info.ChatID = chat.Id
 	info.Title = chat.Title
@@ -50,7 +50,7 @@ func (e *ChannelInfoLoader) Export(name string) (*types.Group, error) {
 		return nil, fmt.Errorf("it's a channel, not a group")
 	}
 	info.Username = sg.Username
-	log.Infof("super group loaded by id `%d`", sgt.SupergroupId)
+	log.Debugf("super group loaded by id `%d`", sgt.SupergroupId)
 	sgi, err := e.client.GetSupergroupFullInfo(sgt.SupergroupId)
 	if err != nil {
 		return nil, fmt.Errorf("can't load supergroup: %v", err)
@@ -69,7 +69,7 @@ func (e *ChannelInfoLoader) Export(name string) (*types.Group, error) {
 		}
 	}
 
-	log.Infof("super group channelInfo loaded by id `%d`", sgt.SupergroupId)
+	log.Debugf("super group channelInfo loaded by id `%d`", sgt.SupergroupId)
 
 	return info, nil
 }
