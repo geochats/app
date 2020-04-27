@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"geochats/pkg/client"
 	"github.com/Arman92/go-tdlib"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 )
 
 type SyncDownloader struct {
@@ -25,7 +27,18 @@ func NewSyncDownloader(client client.AbstractClient, baseDir string, baseUrl str
 }
 
 func (e *SyncDownloader) DownloadChannelFile(fileRef *tdlib.File, dst *string) error {
-	return e.downloadAttempt(fileRef, dst)
+	const steps = 10
+	for s := 0; s < steps; s++ {
+		err := e.downloadAttempt(fileRef, dst)
+		if err == nil {
+			return nil
+		}
+		pause := time.Second
+		log.Infof("File `%d` on attempt %d/%d after pause `%s`: %v", fileRef.Id, s, steps, pause, err)
+		time.Sleep(pause)
+	}
+
+	return fmt.Errorf("downloading incomplete in %d steps", steps)
 }
 
 func (e *SyncDownloader) downloadAttempt(fileRef *tdlib.File, dst *string) error {
@@ -65,7 +78,7 @@ func (e *SyncDownloader) downloadAttempt(fileRef *tdlib.File, dst *string) error
 		"downloading incomplete: %s / %s = %.0f%%",
 		ByteCountDecimal(int64(file.Local.DownloadedSize)),
 		ByteCountDecimal(int64(file.Remote.UploadedSize)),
-		float64(file.Local.DownloadedSize) / float64(file.Remote.UploadedSize) * 100,
+		float64(file.Local.DownloadedSize)/float64(file.Remote.UploadedSize)*100,
 	)
 }
 
@@ -81,7 +94,6 @@ func ByteCountDecimal(b int64) string {
 	}
 	return fmt.Sprintf("%.1f%cB", float64(b)/float64(div), "kMGTPE"[exp])
 }
-
 
 func copyFile(src, dst string) error {
 	input, err := ioutil.ReadFile(src)
