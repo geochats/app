@@ -40,10 +40,7 @@ func New(cl client.AbstractClient, store storage.Storage, ch *loaders.ChannelInf
 func (b *Bot) Run() error {
 	eventFilter := func(msg *tdlib.TdMessage) bool {
 		updateMsg := (*msg).(*tdlib.UpdateNewMessage)
-		if updateMsg.Message.IsOutgoing {
-			return false
-		}
-		return true
+		return !updateMsg.Message.IsOutgoing
 	}
 	receiver := b.cl.AddEventReceiver(&tdlib.UpdateNewMessage{}, eventFilter, 5)
 	for newMsg := range receiver.Chan {

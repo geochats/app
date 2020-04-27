@@ -125,7 +125,7 @@ func (b *BoltStorage) ListPoint() ([]types.Point, error) {
 
 func (b *BoltStorage) ListMottos() ([]types.Motto, error) {
 	return []types.Motto{
-		{1, "Требую введения ЧС!"},
+		{ID: 1, Text: "Требую введения ЧС!"},
 	}, nil
 }
 
