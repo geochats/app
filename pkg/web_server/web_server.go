@@ -14,22 +14,24 @@ import (
 )
 
 type WebServer struct {
-	addr   string
-	tg     client.AbstractClient
-	store  storage.Storage
-	loader *loaders.ChannelInfoLoader
-	router *mux.Router
-	logger *logrus.Entry
+	addr       string
+	docRootDir string
+	tg         client.AbstractClient
+	store      storage.Storage
+	loader     *loaders.ChannelInfoLoader
+	router     *mux.Router
+	logger     *logrus.Entry
 }
 
-func New(addr string, tgClient client.AbstractClient, store storage.Storage, loader *loaders.ChannelInfoLoader, logger *logrus.Logger) *WebServer {
+func New(addr string, documentRootDir string, tgClient client.AbstractClient, store storage.Storage, loader *loaders.ChannelInfoLoader, logger *logrus.Logger) *WebServer {
 	return &WebServer{
-		addr:   addr,
-		tg:     tgClient,
-		store:  store,
-		loader: loader,
-		router: mux.NewRouter(),
-		logger: logger.WithField("package", "web_server"),
+		addr:       addr,
+		docRootDir: documentRootDir,
+		tg:         tgClient,
+		store:      store,
+		loader:     loader,
+		router:     mux.NewRouter(),
+		logger:     logger.WithField("package", "web_server"),
 	}
 }
 

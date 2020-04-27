@@ -12,37 +12,42 @@ import (
 	"github.com/Arman92/go-tdlib"
 	log "github.com/sirupsen/logrus"
 	"os"
-	"path/filepath"
 	"time"
 )
 
 func main() {
-	log.SetLevel(log.InfoLevel)
-	workDir := ensureEnv("WORK_DIR")
-	publicDir := ensureEnv("PUBLIC_DIR")
-	verbose := os.Getenv("VERBOSE") != ""
-	tgAppID := ensureEnv("TG_APP_ID")
-	tgAppHash := ensureEnv("TG_APP_HASH")
-	botApiToken := os.Getenv("BOT_API_TOKEN")
-	listen := ensureEnv("LISTEN")
-	dbFile := ensureEnv("DB")
-	logger := log.StandardLogger()
+	var (
+		verbose = os.Getenv("VERBOSE") != ""
 
+		workDir   = ensureEnv("VAR_DIR")
+		publicDir = ensureEnv("PUBLIC_DIR")
+		dbFile    = ensureEnv("DB_FILE")
+
+		tgAppID     = ensureEnv("TG_APP_ID")
+		tgAppHash   = ensureEnv("TG_APP_HASH")
+		botApiToken = os.Getenv("BOT_API_TOKEN")
+
+		listen = ensureEnv("LISTEN")
+
+		logger = log.StandardLogger()
+	)
+
+	log.SetLevel(log.InfoLevel)
 	tdlib.SetLogVerbosityLevel(1)
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 		tdlib.SetLogVerbosityLevel(5)
 	}
-	if workDir == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		workDir, err = filepath.EvalSymlinks(cwd)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	logger.Infof("Options: %#v", log.Fields{
+		"workDir":     workDir,
+		"publicDir":   publicDir,
+		"verbose":     verbose,
+		"tgAppID":     tgAppID,
+		"tgAppHash":   tgAppHash,
+		"botApiToken": botApiToken,
+		"listen":      listen,
+		"dbFile":      dbFile,
+	})
 
 	cl, err := client.New(tgAppID, tgAppHash, workDir)
 	if err != nil {
@@ -51,6 +56,11 @@ func main() {
 	if err := client.EnsureBotAuth(cl, botApiToken, 10, 2*time.Second); err != nil {
 		log.Panicf("can't auth tg bot: %v", err)
 	}
+	me, err := cl.GetMe()
+	if err != nil {
+		log.Panicf("can't get tg bot info: %v", err)
+	}
+	logger.Infof("Bot info: %#v", me)
 
 	store, err := storage.New(dbFile)
 	if err != nil {
@@ -77,7 +87,7 @@ func main() {
 		}
 	}()
 
-	srv := web_server.New(listen, cl, store, loader, logger)
+	srv := web_server.New(listen, publicDir, cl, store, loader, logger)
 	if err := srv.Listen(); err != nil {
 		log.Panicf("can't create storage: %v", err)
 	}
