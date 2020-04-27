@@ -16,7 +16,9 @@ func (b *Bot) ActionGroup(flow *Flow, msg *tdlib.Message) error {
 		if err != nil {
 			return fmt.Errorf("can't export group by name `%s`: %v", name, err)
 		}
-		text := fmt.Sprintf("Я вижу группу с названием `%s`. Чтобы добавить ее на карту, пришлите ее расположение.", group.Title)
+		text := fmt.Sprintf("Я вижу группу с названием `%s`. Чтобы добавить ее на карту, пришлите ее расположение. "+
+			"Или просто добавиьте в ее описание ссылку `https://miting.link/#<широта>,<долгота>`, "+
+			"например, https://miting.link/#51.178849,-1.826214", group.Title)
 		inputMsgTxt := tdlib.NewInputMessageText(tdlib.NewFormattedText(text, nil), true, true)
 		_, err = b.cl.SendMessage(flow.ChatID, 0, nil, nil, inputMsgTxt)
 		flow.Data["group"] = group
