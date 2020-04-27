@@ -41,7 +41,8 @@ RUN apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository htt
     ln -s /usr/include /usr/local/include && \
     ln -s /usr/lib /usr/local/lib && \
     mkdir -p /app/var/db && \
-    chown -R nobody:nobody /app/var/db
+    mkdir -p /app/var/work && \
+    chown -R nobody:nobody /app/var/
 ENV \
     WORK_DIR=/app/var/work \
     PUBLIC_DIR=./public \
