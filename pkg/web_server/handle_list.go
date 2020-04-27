@@ -35,7 +35,6 @@ func (s *WebServer) handleList() http.HandlerFunc {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't load points: %v", err))
 			return
 		}
-		spew.Dump(points)
 		resp.Points = make([]respPoint, 0)
 		for _, p := range points {
 			if p.Complete() {
