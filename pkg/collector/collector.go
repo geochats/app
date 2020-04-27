@@ -2,10 +2,10 @@ package collector
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"geochats/pkg/client"
 	"geochats/pkg/collector/loaders"
 	"geochats/pkg/storage"
+	"github.com/sirupsen/logrus"
 	"regexp"
 	"strconv"
 )
@@ -32,15 +32,19 @@ func (c *Collector) UpdateGroups() error {
 		return fmt.Errorf("can't list groups from collector")
 	}
 	for _, g := range groups {
-		newGroup, err := c.loader.Export(g.Username)
+		chat, err := c.cl.GetChat(g.ChatID)
 		if err != nil {
-			return fmt.Errorf("collector error: %v", err)
+			c.logger.Errorf("can't get chat from tg: %v", err)
+			continue
 		}
-		lat, long := checkCoordinates(newGroup.Description)
-		newGroup.Latitude = lat
-		newGroup.Longitude = long
-		if err := c.store.AddGroup(newGroup); err != nil {
-			return fmt.Errorf("collector error: %v", err)
+		newGroup, err := c.loader.Export(chat, true)
+		if err != nil {
+			c.logger.Errorf("collector error: %v", err)
+			continue
+		}
+		if err := c.store.UpdateGroup(newGroup); err != nil {
+			c.logger.Errorf("collector error: %v", err)
+			continue
 		}
 	}
 	return nil

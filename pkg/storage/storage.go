@@ -12,7 +12,7 @@ import (
 )
 
 type Storage interface {
-	AddGroup(g *types.Group) error
+	UpdateGroup(g *types.Group) error
 	ListGroups() ([]types.Group, error)
 	UpdatePoint(diff *types.Point) (*types.Point, error)
 	GetPoint(chatID int64) (*types.Point, error)
@@ -25,7 +25,7 @@ type BoltStorage struct {
 	pointsBucketName []byte
 }
 
-func (b *BoltStorage) AddGroup(g *types.Group) error {
+func (b *BoltStorage) UpdateGroup(g *types.Group) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		buc := tx.Bucket(b.groupsBucketName)
 		buf := bytes.Buffer{}

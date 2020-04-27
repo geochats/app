@@ -19,10 +19,25 @@
     <div class="modal-background"></div>
     <div class="modal-content">
         <div class="box">
-            <h1 class="title">???</h1>
-            <p>Вы можете добавить митинг или одиночный пикет. И то и другое происходит через telegram-бот <a href="https://t.me/miting_link_bot">@miting_link_bot</a>.
-                Чтобы добавить пикет, отправьте ему команду <code>/single</code>. Чтобы создать митинг - добавьте его в группу и отправьте команду <code>/group</code>.
-            </p>
+            <div class="container">
+                <div class="content">
+                    <h1 class="title">???</h1>
+                    <h3 class="subtitle">Чтобы добавить одиночный пикет</h3>
+                    <ul>
+                        <li>перейдите по ссылке и включите бота <a href="https://t.me/miting_link_bot">@miting_link_bot</a></li>
+                        <li>отправьте боту сообщение <code>/location широта, долгота</code></li>
+                    </ul>
+
+                    <h3 class="subtitle">Чтобы добавить групповой митинг</h3>
+                    <ul>
+                        <li>для создания митинга, нужна публичная группа в телеграмме</li>
+                        <li>добавьте бота <code>@miting_link_bot</code> в группу</li>
+                        <li>отправьте из группы сообщение боту <code>/location@miting_link_bot широта, долгота</code></li>
+                    </ul>
+
+                    <p>Если вы не знаете широты и долготы, то отправьте боту локацию (работает только на телефонах).</p>
+                </div>
+            </div>
         </div>
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
@@ -53,7 +68,8 @@
                 <div class="media-content">
                     <div class="content">
                         <p class="image is-square">
-                            <img id="pointImage" class="has-ratio" style="max-width:100%;width:auto;max-height:100%;height:auto;" alt=""/>
+                            <img id="pointImage" class="has-ratio"
+                                 style="max-width:100%;width:auto;max-height:100%;height:auto;" alt=""/>
                         </p>
                         <p id="pointDesc"></p>
                     </div>
@@ -77,7 +93,12 @@
         const map = new ol.Map({
             controls: [
                 new ol.control.Zoom(),
-                new ol.control.ScaleLine()
+                new ol.control.ScaleLine(),
+                new ol.control.MousePosition({
+                    coordinateFormat: ol.coordinate.createStringXY(4),
+                    projection: 'EPSG:4326',
+                    undefinedHTML: '&nbsp;'
+                })
             ],
             target: 'map',
             layers: [
@@ -94,6 +115,7 @@
                 zoom: 4
             })
         });
+
 
         // map.on('pointermove', function (evt) {
         //     var feature = map.forEachFeatureAtPixel(evt.pixel, function (feat, layer) {

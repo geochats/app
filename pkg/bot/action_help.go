@@ -4,9 +4,18 @@ import (
 	"github.com/Arman92/go-tdlib"
 )
 
-func (b *Bot) ActionHelp(flow *Flow, _ *tdlib.Message) error {
-	text := "Вы можете добавить митинг или одиночный пикет. Чтобы добавить пикет, отправьте команду /single. Чтобы добавить митинг - /group"
-	inputMsgTxt := tdlib.NewInputMessageText(tdlib.NewFormattedText(text, nil), true, true)
-	_, err := b.cl.SendMessage(flow.ChatID, 0, nil, nil, inputMsgTxt)
-	return err
+func (b *Bot) ActionHelp(msg *tdlib.Message) error {
+	return b.sendText(
+		msg,
+		"Чтобы добавить одиночный пикет, отправьте этому боту, команду <code>/location</code> с широтой и долготой. Например, " +
+			"<pre>/location 51.178849,-1.826214</pre>" +
+		"Если вы не знаете широты и долготы, отправьте локацию (работает только на телефонах), и бот вернет вам координаты.\n" +
+		"\n" +
+		"Чтобы добавить групповой митинг, вы должны быть администратором в публичной группе митинга. Добавьте бота в группу и отправьте ему " +
+			"сообщение с координатами. Например, \n" +
+		"<pre>/location@%s 51.178849,-1.826214</pre>\n" +
+			"Пусть вас не смущает вот это <i>@%s</i>, это просто имя бота.",
+		b.me.Username,
+		b.me.Username,
+	)
 }

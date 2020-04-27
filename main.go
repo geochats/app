@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"geochats/pkg/bot"
 	"geochats/pkg/client"
-	"geochats/pkg/client/downloader"
 	"geochats/pkg/collector"
 	"geochats/pkg/collector/loaders"
+	"geochats/pkg/downloader"
 	"geochats/pkg/storage"
 	"geochats/pkg/web_server"
 	"github.com/Arman92/go-tdlib"
@@ -56,11 +56,6 @@ func main() {
 	if err := client.EnsureBotAuth(cl, botApiToken, 10, 2*time.Second); err != nil {
 		log.Panicf("can't auth tg bot: %v", err)
 	}
-	me, err := cl.GetMe()
-	if err != nil {
-		log.Panicf("can't get tg bot info: %v", err)
-	}
-	logger.Infof("Bot info: %#v", me)
 
 	store, err := storage.New(dbFile)
 	if err != nil {
