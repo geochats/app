@@ -3,7 +3,6 @@ package web_server
 import (
 	"fmt"
 	"geochats/pkg/types"
-	"github.com/davecgh/go-spew/spew"
 	"net/http"
 )
 
@@ -50,7 +49,6 @@ func (s *WebServer) handleList() http.HandlerFunc {
 		if err != nil {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't load groups: %v", err))
 		}
-		spew.Dump(groups)
 		resp.Groups = make([]respGroup, 0)
 		for _, g := range groups {
 			if g.Complete() {
