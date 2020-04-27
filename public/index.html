@@ -66,6 +66,8 @@
 
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList"></script>
+<script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
 <script type="text/javascript">
     const initialCoords = [88.78367097860782, 60.317092090457066];
 
@@ -135,7 +137,6 @@
                     const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.longitude, m.latitude])));
                     f.set("group", m);
                     f.setStyle(buildStyle(m.count));
-                    console.log(f);
                     return f;
                 })
             })
