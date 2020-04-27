@@ -40,8 +40,12 @@ FROM golang:1.13.7-alpine3.11
 RUN apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
     ln -s /usr/include /usr/local/include && \
     ln -s /usr/lib /usr/local/lib && \
-    mkdir -p /app/var && \
-    chown -R nobody:nobody /app/var
+    mkdir -p /app/var/db && \
+    chown -R nobody:nobody /app/var/db
+ENV \
+    WORK_DIR=/app/var/work \
+    PUBLIC_DIR=./public \
+    DB=/app/var/db/groups.db
 COPY --from=build /app/app /app/app
 COPY --from=build /app/public /app/public
 COPY --from=build /etc/localtime /etc/localtime
