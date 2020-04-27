@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"geochats/pkg/client"
 	"github.com/Arman92/go-tdlib"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 )
 
 type SyncDownloader struct {
@@ -27,21 +25,7 @@ func NewSyncDownloader(client client.AbstractClient, baseDir string, baseUrl str
 }
 
 func (e *SyncDownloader) DownloadChannelFile(fileRef *tdlib.File, dst *string) error {
-	const steps = 1
-	for s := 0; s < steps; s++ {
-		err := e.downloadAttempt(fileRef, dst)
-		if err == nil {
-			return nil
-		}
-		pause := time.Second
-		if s > 5 {
-			pause = 10 * time.Second
-		}
-		log.Infof("File `%d` on attempt %d/%d after pause `%s`: %v", fileRef.Id, s, steps, pause, err)
-		time.Sleep(pause)
-	}
-
-	return fmt.Errorf("downloading incomplete in %d steps", steps)
+	return e.downloadAttempt(fileRef, dst)
 }
 
 func (e *SyncDownloader) downloadAttempt(fileRef *tdlib.File, dst *string) error {
