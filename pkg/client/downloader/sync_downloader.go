@@ -27,7 +27,7 @@ func NewSyncDownloader(client client.AbstractClient, baseDir string, baseUrl str
 }
 
 func (e *SyncDownloader) DownloadChannelFile(fileRef *tdlib.File, dst *string) error {
-	const steps = 1000
+	const steps = 1
 	for s := 0; s < steps; s++ {
 		err := e.downloadAttempt(fileRef, dst)
 		if err == nil {
