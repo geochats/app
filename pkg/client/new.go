@@ -49,12 +49,7 @@ func New(apiID string, apiHash string, baseDir string) (AbstractClient, error) {
 func EnsureBotAuth(client AbstractClient, botToken string, attempts int, sleep time.Duration) error {
 	for i := 0; i < attempts; i++ {
 		currentState, _ := client.Authorize()
-		log.Infof(
-			"Trying to auth like a bot. Current state: %#v %#v %v",
-			currentState.GetAuthorizationStateEnum(),
-			tdlib.AuthorizationStateReadyType,
-			currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateReadyType,
-		)
+		log.Infof("Bot state: %s", currentState.GetAuthorizationStateEnum())
 		if currentState.GetAuthorizationStateEnum() == tdlib.AuthorizationStateWaitPhoneNumberType {
 			_, err := client.CheckAuthenticationBotToken(botToken)
 			if err != nil {
