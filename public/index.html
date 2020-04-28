@@ -5,19 +5,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Митинг.Линк</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css"
-          type="text/css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="manifest" href="/static/site.webmanifest">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css"
+          type="text/css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+    <style>
+        .ol-control button {
+            background-color: #f14668;
+        }
+    </style>
 </head>
 
 <body>
 <div id="map" class="map" style="width:100%;height:100%;position:fixed"></div>
-<button id="helpButton" class="button is-danger" style="top:2em;right:.5em;position:fixed">?</button>
+<button id="helpButton" class="button is-large is-danger" style="top:.5em;right:.5em;position:fixed">?</button>
+<a href="https://github.com/geochats/app">
+    <img src="./static/GitHub-Mark-32px.png" width="32" height="32" style="bottom:.5em;right:.5em;position:fixed" alt="Исходный код проекта"/>
+</a>
 <div id="helpModal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -39,6 +47,8 @@
                     </ul>
 
                     <p>Если вы не знаете широты и долготы, то отправьте боту локацию (работает только на телефонах).</p>
+
+                    <p><a href="https://github.com/geochats/app">Исходный код сервиса</a></p>
                 </div>
             </div>
         </div>
@@ -138,13 +148,7 @@
 
         const map = new ol.Map({
             controls: [
-                new ol.control.Zoom(),
-                new ol.control.ScaleLine(),
-                new ol.control.MousePosition({
-                    coordinateFormat: ol.coordinate.createStringXY(4),
-                    projection: 'EPSG:4326',
-                    undefinedHTML: '&nbsp;'
-                })
+                new ol.control.Zoom()
             ],
             target: 'map',
             layers: [
