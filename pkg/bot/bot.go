@@ -94,17 +94,19 @@ func (b *Bot) Process(msg *tdlib.Message) error {
 }
 
 func (b *Bot) processPrivateMessage(msg *tdlib.Message, text string, _ *tdlib.Chat) error {
-	point, err := b.store.GetPoint(msg.ChatId)
-	if err != nil {
-		return fmt.Errorf("can't load point: %v", err)
-	}
-	if point == nil {
-		point = &types.Point{
-			ChatID:    msg.ChatId,
-		}
-	}
 	switch {
+	case msg.Content.GetMessageContentEnum() == tdlib.MessageLocationType:
+		return b.ActionShowCoords(msg)
 	case strings.HasPrefix(text, "/location@"):
+		point, err := b.store.GetPoint(msg.ChatId)
+		if err != nil {
+			return fmt.Errorf("can't load point: %v", err)
+		}
+		if point == nil {
+			point = &types.Point{
+				ChatID:    msg.ChatId,
+			}
+		}
 		return b.ActionSingleSetLocation(msg, point)
 	default:
 		return b.sendText(msg, "Я не понимаю :( Если хотите увидеть список команд, отправьте мне `/start`")
