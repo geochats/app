@@ -6,8 +6,6 @@ import (
 	"geochats/pkg/collector/loaders"
 	"geochats/pkg/storage"
 	"github.com/sirupsen/logrus"
-	"regexp"
-	"strconv"
 )
 
 type Collector struct {
@@ -42,22 +40,10 @@ func (c *Collector) UpdateGroups() error {
 			c.logger.Errorf("collector error: %v", err)
 			continue
 		}
-		if err := c.store.UpdateGroup(newGroup); err != nil {
+		if _, err := c.store.UpdateGroup(newGroup); err != nil {
 			c.logger.Errorf("collector error: %v", err)
 			continue
 		}
 	}
 	return nil
-}
-
-func checkCoordinates(desc string) (float64, float64) {
-	var re = regexp.MustCompile(`(?m)https:\/\/miting.link\/#([0-9.]+),([0-9.]+)`)
-	matches := re.FindAllStringSubmatch(desc, 1)
-	if len(matches) == 0 {
-		return 0, 0
-	}
-	lat, _ := strconv.ParseFloat(matches[0][1], 64)
-	long, _ := strconv.ParseFloat(matches[0][2], 64)
-	return lat, long
-
 }

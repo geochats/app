@@ -1,28 +1,15 @@
 # github.com/Arman92/go-tdlib v0.0.0-20191103185020-a66012edd023 => github.com/c0re100/go-tdlib v0.0.0-20200201014419-c5837ed8eeea
 github.com/Arman92/go-tdlib
-# github.com/VividCortex/ewma v1.1.1
-github.com/VividCortex/ewma
 # github.com/boltdb/bolt v1.3.1
 github.com/boltdb/bolt
-# github.com/cheggaaa/pb/v3 v3.0.4
-github.com/cheggaaa/pb/v3
-github.com/cheggaaa/pb/v3/termutil
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/fatih/color v1.7.0
-github.com/fatih/color
 # github.com/gorilla/handlers v1.4.2
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.7.3
 github.com/gorilla/mux
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/mattn/go-colorable v0.1.2
-github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.10
-github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.7
-github.com/mattn/go-runewidth
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/sirupsen/logrus v1.4.2

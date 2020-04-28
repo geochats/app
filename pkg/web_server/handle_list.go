@@ -60,7 +60,7 @@ func (s *WebServer) handleList() http.HandlerFunc {
 					MembersCount: g.MembersCount,
 					Latitude:     g.Latitude,
 					Longitude:    g.Longitude,
-					Description:  g.Description,
+					Description:  g.DescriptionHTML(),
 				})
 			}
 		}

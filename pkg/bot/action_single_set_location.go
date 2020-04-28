@@ -17,5 +17,5 @@ func (b *Bot) ActionSingleSetLocation(msg *tdlib.Message, point *types.Point) er
 	if _, err := b.store.UpdatePoint(point); err != nil {
 		return fmt.Errorf("can't update point with user coords: %v", err)
 	}
-	return b.sendText(msg, "Местоположение группы сохранено. Увидеть ее можно тут - https://miting.link/#p:%s", point.PublicID())
+	return b.sendText(msg, "Местоположение пикета сохранено. Увидеть его можно тут - https://miting.link/#p:%s", point.PublicID())
 }

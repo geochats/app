@@ -12,7 +12,7 @@ import (
 )
 
 type Storage interface {
-	UpdateGroup(g *types.Group) error
+	UpdateGroup(g *types.Group) (*types.Group, error)
 	ListGroups() ([]types.Group, error)
 	UpdatePoint(diff *types.Point) (*types.Point, error)
 	GetPoint(chatID int64) (*types.Point, error)
@@ -25,15 +25,47 @@ type BoltStorage struct {
 	pointsBucketName []byte
 }
 
-func (b *BoltStorage) UpdateGroup(g *types.Group) error {
-	return b.db.Update(func(tx *bolt.Tx) error {
+func (b *BoltStorage) UpdateGroup(diff *types.Group) (*types.Group, error) {
+	var merged *types.Group
+	return merged, b.db.Update(func(tx *bolt.Tx) error {
 		buc := tx.Bucket(b.groupsBucketName)
-		buf := bytes.Buffer{}
-		if err := gob.NewEncoder(&buf).Encode(g); err != nil {
-			return fmt.Errorf("failed gob Encode: %v", err)
+		v := buc.Get(b.chatIDToBytes(diff.ChatID))
+		if v == nil {
+			merged = diff
+		} else {
+			b := bytes.NewBuffer(v)
+			if err := gob.NewDecoder(b).Decode(&merged); err != nil {
+				return fmt.Errorf("failed gob decode old Points: %v", err)
+			}
+			if diff.Title != "" {
+				merged.Title = diff.Title
+			}
+			if diff.Username != "" {
+				merged.Username = diff.Username
+			}
+			if diff.Description != "" {
+				merged.Description = diff.Description
+			}
+			if diff.Latitude != 0 {
+				merged.Latitude = diff.Latitude
+			}
+			if diff.Longitude != 0 {
+				merged.Longitude = diff.Longitude
+			}
+			if diff.MembersCount != 0 {
+				merged.MembersCount = diff.MembersCount
+			}
+			if diff.Userpic.Path != "" {
+				merged.Userpic.Path = diff.Userpic.Path
+			}
 		}
-		if err := buc.Put(b.chatIDToBytes(g.ChatID), buf.Bytes()); err != nil {
-			return fmt.Errorf("can't put value to bucket: %v", err)
+
+		buf := bytes.Buffer{}
+		if err := gob.NewEncoder(&buf).Encode(merged); err != nil {
+			return fmt.Errorf("failed gob encode Group after merge: %v", err)
+		}
+		if err := buc.Put(b.chatIDToBytes(diff.ChatID), buf.Bytes()); err != nil {
+			return fmt.Errorf("can't put Group value to bucket: %v", err)
 		}
 		return nil
 	})
@@ -96,6 +128,9 @@ func (b *BoltStorage) GetPoint(chatID int64) (*types.Point, error) {
 	err := b.db.View(func(tx *bolt.Tx) error {
 		buc := tx.Bucket(b.pointsBucketName)
 		v := buc.Get(b.chatIDToBytes(chatID))
+		if v == nil {
+			return nil
+		}
 		b := bytes.NewBuffer(v)
 		if err := gob.NewDecoder(b).Decode(&g); err != nil {
 			return fmt.Errorf("failed gob decode Points: %v", err)

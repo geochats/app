@@ -14,8 +14,8 @@ func (b *Bot) ActionGroupSetLocation(msg *tdlib.Message, group *types.Group) err
 		b.logger.Warnf("can't extract group coords from user string `%s`", text)
 		return b.sendText(msg, "Не могу вытащить координаты из строки, сорри")
 	}
-	if err := b.store.UpdateGroup(group); err != nil {
+	if _, err := b.store.UpdateGroup(group); err != nil {
 		return fmt.Errorf("can't update group with user coords: %v", err)
 	}
-	return b.sendText(msg, "Местоположение группы сохранено. Увидеть ее можно тут - https://miting.link/#g:%d", group.ChatID)
+	return b.sendText(msg, "Местоположение митинга сохранено. Увидеть ее можно тут - https://miting.link/#g:%d", group.ChatID)
 }
