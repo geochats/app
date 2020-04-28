@@ -79,7 +79,7 @@ func main() {
 			if err := col.UpdateGroups(); err != nil {
 				log.Errorf("can't update groups: %v", err)
 			}
-			logger.Infof("group collection complete in %s", time.Now().Sub(t))
+			logger.Infof("group collection complete in %s", time.Since(t))
 			time.Sleep(5 * time.Second)
 		}
 	}()
