@@ -35,6 +35,12 @@ func New(addr string, documentRootDir string, tgClient client.AbstractClient, st
 	}
 }
 
+func (s *WebServer) routes() {
+	s.router.HandleFunc("/list", s.handleList()).Methods("GET")
+	s.router.HandleFunc("/health", s.handleHealth()).Methods("GET")
+	s.router.PathPrefix("/").Handler(http.FileServer(http.Dir(s.docRootDir))).Methods("GET")
+}
+
 func (s *WebServer) Listen() error {
 	srv := &http.Server{
 		Handler:      handlers.LoggingHandler(os.Stdout, s.router),

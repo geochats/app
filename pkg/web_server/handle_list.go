@@ -29,6 +29,33 @@ func (s *WebServer) handleList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := new(respSpec)
 
+		if r.URL.Query().Get("random") != "" {
+			f := types.NewRandomFixturer("fake")
+			for i := 0; i < 100; i++ {
+				p := f.Point()
+				resp.Points = append(resp.Points, respPoint{
+					ID:        p.PublicID(),
+					Latitude:  p.Latitude,
+					Longitude: p.Longitude,
+				})
+			}
+			for i := 0; i < 10; i++ {
+				g := f.Group()
+				resp.Groups = append(resp.Groups, respGroup{
+					ChatID:       g.ChatID,
+					Title:        g.Title,
+					Username:     g.Username,
+					Userpic:      g.Userpic,
+					MembersCount: g.MembersCount,
+					Latitude:     g.Latitude,
+					Longitude:    g.Longitude,
+					Description:  g.Description,
+				})
+			}
+			s.responseWithSuccessJSON(w, resp)
+			return
+		}
+
 		points, err := s.store.ListPoint()
 		if err != nil {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't load points: %v", err))
