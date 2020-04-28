@@ -95,7 +95,7 @@ func (b *Bot) Process(msg *tdlib.Message) error {
 
 func (b *Bot) processPrivateMessage(msg *tdlib.Message, text string, _ *tdlib.Chat) error {
 	switch {
-	case msg.Content.GetMessageContentEnum() == tdlib.MessageLocationType:
+	case msg.Content.GetMessageContentEnum() == tdlib.MessageLocationType || msg.Content.GetMessageContentEnum() == tdlib.MessageVenueType:
 		return b.ActionShowCoords(msg)
 	case strings.HasPrefix(text, "/location@"):
 		point, err := b.store.GetPoint(msg.ChatId)
