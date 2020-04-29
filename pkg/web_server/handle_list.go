@@ -3,6 +3,7 @@ package web_server
 import (
 	"fmt"
 	"geochats/pkg/types"
+	"github.com/boltdb/bolt"
 	"net/http"
 )
 
@@ -49,32 +50,41 @@ func (s *WebServer) handleList() http.HandlerFunc {
 					MembersCount: g.MembersCount,
 					Latitude:     g.Latitude,
 					Longitude:    g.Longitude,
-					Description:  g.Description,
+					Description:  g.Text,
 				})
 			}
 			s.responseWithSuccessJSON(w, resp)
 			return
 		}
 
-		points, err := s.store.ListPoint()
+		points := make([]types.Point, 0)
+		groups := make([]types.Group, 0)
+		err := s.store.GetConn().View(func(tx *bolt.Tx) error {
+			var err error
+			points, err = s.store.ListPoint(tx)
+			if err != nil {
+				return fmt.Errorf("can't load points: %v", err)
+			}
+			groups, err = s.store.ListGroups(tx)
+			if err != nil {
+				return fmt.Errorf("can't load groups: %v", err)
+			}
+			return nil
+		})
 		if err != nil {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't load points: %v", err))
 			return
 		}
+
 		resp.Points = make([]respPoint, 0)
 		for _, p := range points {
-			if p.Complete() {
+			if p.Published {
 				resp.Points = append(resp.Points, respPoint{
 					ID:        p.PublicID(),
 					Latitude:  p.Latitude,
 					Longitude: p.Longitude,
 				})
 			}
-		}
-
-		groups, err := s.store.ListGroups()
-		if err != nil {
-			s.responseWithErrorJSON(w, fmt.Errorf("can't load groups: %v", err))
 		}
 		resp.Groups = make([]respGroup, 0)
 		for _, g := range groups {
@@ -87,7 +97,7 @@ func (s *WebServer) handleList() http.HandlerFunc {
 					MembersCount: g.MembersCount,
 					Latitude:     g.Latitude,
 					Longitude:    g.Longitude,
-					Description:  g.DescriptionHTML(),
+					Description:  g.TextHTML(),
 				})
 			}
 		}

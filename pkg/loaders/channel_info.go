@@ -25,7 +25,11 @@ func NewChannelInfoLoader(client client.AbstractClient, baseDir string, baseUrl 
 	}
 }
 
-func (e *ChannelInfoLoader) Export(chat *tdlib.Chat, withImage bool) (*types.Group,  error) {
+func (e *ChannelInfoLoader) Export(chatID int64, withImage bool) (*types.Group,  error) {
+	chat, err := e.client.GetChat(chatID)
+	if err != nil {
+		return nil, fmt.Errorf("can't get chat from tg: %v", err)
+	}
 	info := &types.Group{
 		ChatID: chat.Id,
 		Title: chat.Title,
@@ -48,7 +52,7 @@ func (e *ChannelInfoLoader) Export(chat *tdlib.Chat, withImage bool) (*types.Gro
 		return nil, fmt.Errorf("can't load supergroup: %v", err)
 	}
 	info.MembersCount = sgi.MemberCount
-	info.Description = sgi.Description
+	info.Text = sgi.Description
 
 	if withImage {
 		repl := strings.NewReplacer(string(os.PathSeparator), "", string(os.PathListSeparator), "")

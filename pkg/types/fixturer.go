@@ -1,7 +1,7 @@
 package types
 
 import (
-"fmt"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -21,31 +21,30 @@ func NewRandomFixturer(name string) *Fixturer {
 func (f *Fixturer) Point() Point {
 	return Point{
 		ChatID:    int64(rand.Uint64()),
-		Photo:     Image{
-			Width:  1024,
-			Height: 1024,
-			Path:   "https://picsum.photos/1024/1024",
-		},
-		Latitude:  50 +  5 * rand.NormFloat64(),
-		Longitude: 50 +  5 * rand.NormFloat64(),
-		MottoID:   "",
+		Name:      f.String("name"),
+		Username:  f.String("username"),
+		Latitude:  50 + 5*rand.NormFloat64(),
+		Longitude: 50 + 5*rand.NormFloat64(),
+		Text:      f.String("text"),
+		Published: true,
 	}
 }
 
 func (f *Fixturer) Group() Group {
 	return Group{
-		ChatID:       int64(rand.Uint64()),
-		Title:        f.String("title"),
-		Username:     f.String("username"),
-		Userpic:      Image{
+		ChatID:   int64(rand.Uint64()),
+		Title:    f.String("title"),
+		Username: f.String("username"),
+		Userpic: Image{
 			Width:  1024,
 			Height: 1024,
 			Path:   "https://picsum.photos/1024/1024",
 		},
 		MembersCount: int32(rand.Intn(1000)),
-		Latitude:  50 +  5 * rand.NormFloat64(),
-		Longitude: 50 +  5 * rand.NormFloat64(),
-		Description:  f.String("desc"),
+		Latitude:     50 + 5*rand.NormFloat64(),
+		Longitude:    50 + 5*rand.NormFloat64(),
+		Text:         f.String("desc"),
+		Published:    true,
 	}
 }
 

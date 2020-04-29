@@ -7,23 +7,23 @@ import (
 )
 
 type Group struct {
-	ChatID           int64
+	ChatID       int64
 	Title        string
 	Username     string
+	Text         string
 	Userpic      Image
 	MembersCount int32
 	Latitude     float64
 	Longitude    float64
-	Description  string
+	Published    bool
 }
-
 
 func (g *Group) Complete() bool {
 	return g.Username != "" && g.Latitude != 0
 }
 
-func (g *Group) DescriptionHTML()  string {
-	h := string(markdown.ToHTML([]byte(g.Description), nil, nil))
+func (g *Group) TextHTML() string {
+	h := string(markdown.ToHTML([]byte(g.Text), nil, nil))
 	replacer := strings.NewReplacer(">http://", ">", ">https://", ">")
 	h = replacer.Replace(h)
 	return bluemonday.UGCPolicy().Sanitize(h)

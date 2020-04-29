@@ -4,15 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"geochats/pkg/client"
-	"geochats/pkg/collector/loaders"
 	"geochats/pkg/downloader"
+	"geochats/pkg/loaders"
 	"geochats/pkg/storage"
-	"geochats/pkg/types"
 	"github.com/Arman92/go-tdlib"
 	"github.com/sirupsen/logrus"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
+)
+
+const (
+	startCommand = "/start"
+	locationCommand = "/place"
+	textCommand = "/text"
+	publishCommand = "/show"
+	hideCommand = "/hide"
 )
 
 type Bot struct {
@@ -54,7 +62,7 @@ func (b *Bot) Run() (err error) {
 	receiver := b.cl.AddEventReceiver(&tdlib.UpdateNewMessage{}, eventFilter, 5)
 	for newMsg := range receiver.Chan {
 		update := (newMsg).(*tdlib.UpdateNewMessage)
-		b.logger.Infof("new telegram message `%s` `%d`", tryExtractText(update.Message), update.Message.Id)
+		b.logger.WithField("chatID", update.Message.ChatId).Infof("new telegram message `%s`", tryExtractText(update.Message))
 		go func(update *tdlib.UpdateNewMessage) {
 			lg := b.logger.WithField("chatID", update.Message.ChatId).WithField("msgID", update.Message.Id)
 			err := b.Process(update.Message)
@@ -68,15 +76,18 @@ func (b *Bot) Run() (err error) {
 }
 
 func (b *Bot) Process(msg *tdlib.Message) error {
-	text := tryExtractText(msg)
-	if strings.HasPrefix(text, "/start") {
-		return b.ActionHelp(msg)
-	}
+	defer func() {
+		if r := recover(); r != nil {
+			b.logger.Errorf("Panic in bot.Process():%#v\n%s", r, string(debug.Stack()))
+		}
+	}()
 
 	chat, err := b.cl.GetChat(msg.ChatId)
 	if err != nil {
 		return fmt.Errorf("can't get processed message chat: %v", err)
 	}
+
+	text := tryExtractText(msg)
 	switch chat.Type.GetChatTypeEnum() {
 	case tdlib.ChatTypePrivateType:
 		if err := b.processPrivateMessage(msg, text, chat); err != nil {
@@ -97,19 +108,16 @@ func (b *Bot) processPrivateMessage(msg *tdlib.Message, text string, _ *tdlib.Ch
 	switch {
 	case msg.Content.GetMessageContentEnum() == tdlib.MessageLocationType || msg.Content.GetMessageContentEnum() == tdlib.MessageVenueType:
 		return b.ActionShowCoords(msg)
-	case strings.HasPrefix(text, "/location@"):
-		point, err := b.store.GetPoint(msg.ChatId)
-		if err != nil {
-			return fmt.Errorf("can't load point: %v", err)
-		}
-		if point == nil {
-			point = &types.Point{
-				ChatID:    msg.ChatId,
-			}
-		}
-		return b.ActionSingleSetLocation(msg, point)
+	case strings.HasPrefix(text, locationCommand):
+		return b.ActionSingleSetLocation(msg)
+	case strings.HasPrefix(text, textCommand):
+		return b.ActionSingleSetText(msg)
+	case strings.HasPrefix(text, publishCommand):
+		return b.ActionSingleChangeVisibility(msg, true)
+	case strings.HasPrefix(text, hideCommand):
+		return b.ActionSingleChangeVisibility(msg, false)
 	default:
-		return b.sendText(msg, "Я не понимаю :( Если хотите увидеть список команд, отправьте мне `/start`")
+		return b.ActionSingleShowHelp(msg)
 	}
 }
 
@@ -129,16 +137,17 @@ func (b *Bot) processGroupMessage(msg *tdlib.Message, text string, chat *tdlib.C
 		return b.sendText(msg, "Только администратор группы может управлять ботом")
 	}
 
-	group, err := b.ch.Export(chat, false)
-	if err != nil {
-		return err
-	}
-
 	switch {
-	case strings.HasPrefix(text, "/location@"):
-		return b.ActionGroupSetLocation(msg, group)
+	case strings.HasPrefix(text, locationCommand):
+		return b.ActionGroupSetLocation(msg)
+	case strings.HasPrefix(text, textCommand):
+		return b.ActionGroupSetText(msg)
+	case strings.HasPrefix(text, publishCommand):
+		return b.ActionGroupChangeVisibilityEnable(msg, true)
+	case strings.HasPrefix(text, hideCommand):
+		return b.ActionGroupChangeVisibilityEnable(msg, false)
 	default:
-		return b.sendText(msg, "Я не понимаю :( Если хотите увидеть список команд, отправьте мне `/start`")
+		return b.ActionGroupShowHelp(msg)
 	}
 }
 

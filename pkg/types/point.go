@@ -3,14 +3,19 @@ package types
 import (
 	"crypto/sha256"
 	"fmt"
+	"github.com/gomarkdown/markdown"
+	"github.com/microcosm-cc/bluemonday"
+	"strings"
 )
 
 type Point struct {
 	ChatID    int64
-	Photo     Image
+	Name      string
+	Username  string
 	Latitude  float64
 	Longitude float64
-	MottoID   string
+	Text      string
+	Published bool
 }
 
 func (p *Point) PublicID() string {
@@ -18,8 +23,11 @@ func (p *Point) PublicID() string {
 	return fmt.Sprintf("%x", h)
 }
 
-func (p *Point) Complete() bool {
-	return p.Latitude != 0
+func (p *Point) TextHTML() string {
+	h := string(markdown.ToHTML([]byte(p.Text), nil, nil))
+	replacer := strings.NewReplacer(">http://", ">", ">https://", ">")
+	h = replacer.Replace(h)
+	return bluemonday.UGCPolicy().Sanitize(h)
 }
 
 type Image struct {

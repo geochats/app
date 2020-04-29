@@ -3,7 +3,7 @@ package web_server
 import (
 	"fmt"
 	"geochats/pkg/client"
-	"geochats/pkg/collector/loaders"
+	"geochats/pkg/loaders"
 	"geochats/pkg/storage"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"

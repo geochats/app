@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"geochats/pkg/bot"
 	"geochats/pkg/client"
-	"geochats/pkg/collector"
-	"geochats/pkg/collector/loaders"
 	"geochats/pkg/downloader"
+	"geochats/pkg/loaders"
 	"geochats/pkg/storage"
 	"geochats/pkg/web_server"
 	"github.com/Arman92/go-tdlib"
@@ -69,18 +68,6 @@ func main() {
 	go func() {
 		if err := b.Run(); err != nil {
 			log.Fatalf("error in bot run: %v", err)
-		}
-	}()
-
-	col := collector.New(cl, loader, store, logger)
-	go func() {
-		for {
-			t := time.Now()
-			if err := col.UpdateGroups(); err != nil {
-				log.Errorf("can't update groups: %v", err)
-			}
-			logger.Infof("group collection complete in %s", time.Since(t))
-			time.Sleep(5 * time.Second)
 		}
 	}()
 
