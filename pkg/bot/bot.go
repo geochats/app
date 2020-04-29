@@ -166,10 +166,22 @@ func tryExtractText(msg *tdlib.Message) string {
 	text, ok := msg.Content.(*tdlib.MessageText)
 	if ok {
 		if text.Text != nil {
-			return text.Text.Text
+			return regexp.MustCompile(`(?m)<[^>]+>`).ReplaceAllLiteralString(text.Text.Text, "")
 		}
 	}
 	return ""
+}
+
+func tryTextWithoutCommand(msg *tdlib.Message) string {
+	text := tryExtractText(msg)
+	commandEndPos := strings.Index(text, " ")
+	if commandEndPos == -1 {
+		if strings.HasPrefix(text, "/") {
+			return ""
+		}
+		return text
+	}
+	return strings.Trim(text[commandEndPos:], " ")
 }
 
 func extractCoords(text string) (float64, float64, bool) {

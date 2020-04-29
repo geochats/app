@@ -5,14 +5,10 @@ import (
 	"geochats/pkg/types"
 	"github.com/Arman92/go-tdlib"
 	"github.com/boltdb/bolt"
-	"strings"
 )
 
 func (b *Bot) ActionGroupSetText(msg *tdlib.Message) error {
-	text := strings.Trim(strings.Replace(tryExtractText(msg), textCommand, "", 1), " ")
-	if text == "" {
-		return b.sendText(msg, "Не вижу текст, извините. Чтобы изменить текст, отправьте <pre>%s ваш текст</pre>", textCommand)
-	}
+	text := tryTextWithoutCommand(msg)
 	return b.store.GetConn().Update(func(tx *bolt.Tx) error {
 		group, err := b.store.GetGroup(tx, msg.ChatId)
 		if err != nil {
@@ -21,6 +17,23 @@ func (b *Bot) ActionGroupSetText(msg *tdlib.Message) error {
 		if group == nil {
 			group = &types.Group{ChatID: msg.ChatId}
 		}
+
+		if text == "" {
+			if group.Text == "" {
+				if err := b.sendText(msg, "Сейчас текста нет"); err != nil {
+					return err
+				}
+			} else {
+				if err := b.sendText(msg, "Сейчас текст такой:"); err != nil {
+					return err
+				}
+				if err := b.sendText(msg, "<pre>%s</pre>", group.Text); err != nil {
+					return err
+				}
+			}
+			return b.sendText(msg, "Чтобы изменить текст, отправьте <pre>%s ваш текст</pre>", textCommand)
+		}
+
 		group.Text = text
 		if err := b.store.SaveGroup(tx, group); err != nil {
 			return fmt.Errorf("can't save group: %v", err)

@@ -5,14 +5,10 @@ import (
 	"geochats/pkg/types"
 	"github.com/Arman92/go-tdlib"
 	"github.com/boltdb/bolt"
-	"strings"
 )
 
 func (b *Bot) ActionSingleSetText(msg *tdlib.Message) error {
-	text := strings.Trim(strings.Replace(tryExtractText(msg), textCommand, "", 1), " ")
-	if text == "" {
-		return b.sendText(msg, "Не вижу текст, извините. Чтобы изменить текст, отправьте <pre>%s ваш текст</pre>", textCommand)
-	}
+	text := tryTextWithoutCommand(msg)
 	return b.store.GetConn().Update(func(tx *bolt.Tx) error {
 		point, err := b.store.GetPoint(tx, msg.ChatId)
 		if err != nil {
@@ -21,6 +17,23 @@ func (b *Bot) ActionSingleSetText(msg *tdlib.Message) error {
 		if point == nil {
 			point = &types.Point{ChatID: msg.ChatId}
 		}
+
+		if text == "" {
+			if point.Text == "" {
+				if err := b.sendText(msg, "Сейчас текста нет"); err != nil {
+					return err
+				}
+			} else {
+				if err := b.sendText(msg, "Сейчас текст такой:"); err != nil {
+					return err
+				}
+				if err := b.sendText(msg, "<pre>%s</pre>", point.Text); err != nil {
+					return err
+				}
+			}
+			return b.sendText(msg, "Чтобы изменить текст, отправьте <pre>%s ваш текст</pre>", textCommand)
+		}
+
 		point.Text = text
 		if err := b.store.SavePoint(tx, point); err != nil {
 			return fmt.Errorf("can't save point: %v", err)
