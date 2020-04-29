@@ -102,84 +102,36 @@
     const initialCoords = [88.78367097860782, 60.317092090457066];
     const initialZoom = 4;
     const clusterDistance = 30;
+    let points, groups;
 
     loadData().then(function (data) {
-        const groupVectorSource = new ol.source.Vector({
-            features: buildGroupsFeatures(data.groups).concat(buildPointsFeatures(data.points))
-        })
+
         const view = new ol.View({
             center: ol.proj.fromLonLat(initialCoords),
             zoom: initialZoom
         });
+        const map = buildMap(view, data.points, data.groups);
 
-        const clusterSource = new ol.source.Cluster({
-            distance: clusterDistance,
-            source: groupVectorSource
-        });
-
-        const picketStyle = buildSingleStyle();
-        const groupStyleCache = {};
-        const clusterStyleCache = {};
-        const clusters = new ol.layer.Vector({
-            source: clusterSource,
-            style: function (feature) {
-                const groupsAndPoint = feature.get('features');
-                if (groupsAndPoint.length === 1) {
-                    if (groupsAndPoint[0].get("point")) {
-                        return picketStyle;
-                    } else {
-                        const group = groupsAndPoint[0].get("group");
-                        if (!groupStyleCache[group.count]) {
-                            groupStyleCache[group.count] = buildGroupStyle(group.count)
-                        }
-                        return groupStyleCache[group.count];
-                    }
-                }
-                let count = 0;
-                groupsAndPoint.forEach((f) => {
-                    count += f.get('count');
-                })
-                if (!clusterStyleCache[count]) {
-                    clusterStyleCache[count] = buildClusterStyle(count)
-                }
-                return clusterStyleCache[count];
-            }
-        });
-
-        const map = new ol.Map({
-            controls: [
-                new ol.control.Zoom()
-            ],
-            target: 'map',
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM({
-                        url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
-                    }),
-                }),
-                clusters
-            ],
-            view: view
-        });
-
-        map.on('singleclick', function (evt) {
-            clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
+        const urlParts = document.URL.split('#');
+        if (urlParts.length > 1) {
+            const anchor = urlParts[1].split(':');
+            if (anchor[0] === "g") {
+                const g = data.groups.find(group => group.id === anchor[1]);
                 view.animate({
-                    center: clusterFeatures[0].getGeometry().getCoordinates(),
-                    zoom: view.getZoom() + 1,
+                    center: ol.proj.fromLonLat([g.longitude, g.latitude]),
                     duration: 200
                 });
-                const features = clusterFeatures[0].get("features");
-                if (features.length === 1) {
-                    if (features[0].get("group")) {
-                        showJoinModal(features[0].get('group'));
-                    }
-                    if (features[0].get("point")) {
-                        showPointModal(features[0].get('point'));
-                    }
-                }
-            });
-        });
+                showJoinModal(g);
+            }
+            if (anchor[0] === "p") {
+                const p = data.points.find(group => group.id === anchor[1]);
+                view.animate({
+                    center: ol.proj.fromLonLat([p.longitude, p.latitude]),
+                    duration: 200
+                });
+                showPointModal(p);
+            }
+        }
     })
 
     byId('helpButton').onclick = showHelpModal;

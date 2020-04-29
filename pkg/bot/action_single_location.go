@@ -43,7 +43,7 @@ func (b *Bot) ActionSingleSetLocation(msg *tdlib.Message) error {
 		}
 		return b.sendText(
 			msg,
-			"Ок. Если вы уже опубликовали пикет, командой %s, то увидеть его можно тут - https://miting.link/#g:%s",
+			"Ок. Если вы уже опубликовали пикет, командой %s, то увидеть его можно тут - https://miting.link/#p:%s",
 			publishCommand,
 			point.PublicID())
 	})

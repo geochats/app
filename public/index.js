@@ -1,3 +1,79 @@
+function buildMap(view, points, groups) {
+    const groupVectorSource = new ol.source.Vector({
+        features: buildGroupsFeatures(groups).concat(buildPointsFeatures(points))
+    });
+
+    const clusterSource = new ol.source.Cluster({
+        distance: clusterDistance,
+        source: groupVectorSource
+    });
+
+    const picketStyle = buildSingleStyle();
+    const groupStyleCache = {};
+    const clusterStyleCache = {};
+    const clusters = new ol.layer.Vector({
+        source: clusterSource,
+        style: function (feature) {
+            const groupsAndPoint = feature.get('features');
+            if (groupsAndPoint.length === 1) {
+                if (groupsAndPoint[0].get("point")) {
+                    return picketStyle;
+                } else {
+                    const group = groupsAndPoint[0].get("group");
+                    if (!groupStyleCache[group.count]) {
+                        groupStyleCache[group.count] = buildGroupStyle(group.count)
+                    }
+                    return groupStyleCache[group.count];
+                }
+            }
+            let count = 0;
+            groupsAndPoint.forEach((f) => {
+                count += f.get('count');
+            })
+            if (!clusterStyleCache[count]) {
+                clusterStyleCache[count] = buildClusterStyle(count)
+            }
+            return clusterStyleCache[count];
+        }
+    });
+
+    const map = new ol.Map({
+        controls: [
+            new ol.control.Zoom()
+        ],
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM({
+                    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+                }),
+            }),
+            clusters
+        ],
+        view: view
+    });
+    map.on('singleclick', function (evt) {
+        clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
+            view.animate({
+                center: clusterFeatures[0].getGeometry().getCoordinates(),
+                zoom: view.getZoom() + 1,
+                duration: 200
+            });
+            const features = clusterFeatures[0].get("features");
+            if (features.length === 1) {
+                if (features[0].get("group")) {
+                    showJoinModal(features[0].get('group'));
+                }
+                if (features[0].get("point")) {
+                    showPointModal(features[0].get('point'));
+                }
+            }
+        });
+    });
+
+    return map;
+}
+
 function buildGroupsFeatures(groups) {
     return groups.map(function (m) {
         const f = new ol.Feature(new ol.geom.Point(ol.proj.fromLonLat([m.longitude, m.latitude])));

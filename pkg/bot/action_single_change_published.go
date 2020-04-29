@@ -29,7 +29,7 @@ func (b *Bot) ActionSingleChangeVisibility(msg *tdlib.Message, value bool) error
 			return fmt.Errorf("can't save point: %v", err)
 		}
 		if point.Published {
-			return b.sendText(msg, "Пикет опубликован. Увидеть его можно тут - https://miting.link/#g:%s", point.PublicID())
+			return b.sendText(msg, "Пикет опубликован. Увидеть его можно тут - https://miting.link/#p:%s", point.PublicID())
 		} else {
 			return b.sendText(msg, "Пикет скрыт")
 		}
