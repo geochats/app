@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
 	"github.com/microcosm-cc/bluemonday"
 	"strings"
 )
@@ -24,7 +25,9 @@ func (p *Point) PublicID() string {
 }
 
 func (p *Point) TextHTML() string {
-	h := string(markdown.ToHTML([]byte(p.Text), nil, nil))
+	flags := html.CommonFlags | html.SkipHTML
+	renderer := html.NewRenderer(html.RendererOptions{Flags: flags})
+	h := string(markdown.ToHTML([]byte(p.Text), nil, renderer))
 	replacer := strings.NewReplacer(">http://", ">", ">https://", ">")
 	h = replacer.Replace(h)
 	return bluemonday.UGCPolicy().Sanitize(h)
