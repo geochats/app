@@ -9,11 +9,10 @@ import (
 )
 
 func (b *Bot) ActionSingleSetText(msg *tdlib.Message) error {
-	textWithCommand := tryExtractText(msg)
-	if textWithCommand == "" {
-		return b.sendText(msg, "Не вижу ваш текст, извините")
+	text := strings.Trim(strings.Replace(tryExtractText(msg), textCommand, "", 1), " ")
+	if text == "" {
+		return b.sendText(msg, "Не вижу текст, извините. Чтобы изменить текст, отправьте <pre>%s ваш текст</pre>", textCommand)
 	}
-	text := strings.Trim(strings.Replace(textWithCommand, textCommand, "", 1), " ")
 	return b.store.GetConn().Update(func(tx *bolt.Tx) error {
 		point, err := b.store.GetPoint(tx, msg.ChatId)
 		if err != nil {

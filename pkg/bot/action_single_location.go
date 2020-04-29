@@ -5,10 +5,14 @@ import (
 	"geochats/pkg/types"
 	"github.com/Arman92/go-tdlib"
 	"github.com/boltdb/bolt"
+	"strings"
 )
 
 func (b *Bot) ActionSingleSetLocation(msg *tdlib.Message) error {
-	text := tryExtractText(msg)
+	text := strings.Trim(strings.Replace(tryExtractText(msg), locationCommand, "", 1), " ")
+	if text == "" {
+		return b.sendText(msg, "Вы, похоже, забыли указать координаты. Отправьте <pre>%s широта,долгота</pre>", locationCommand)
+	}
 	lat, long, found := extractCoords(text)
 	if !found {
 		b.logger.Warnf("can't extract group coords from user string `%s`", text)
