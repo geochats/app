@@ -92,15 +92,15 @@ function showHelpModal() {
 function showJoinModal(data) {
     byId('joinTitle').innerHTML = data.title;
     byId('joinCount').innerHTML = data.count;
-    byId('joinDesc').innerHTML = data.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
-    byId('joinLink').href = data.link;
+    byId('joinText').innerHTML = data.description;
+    byId('joinLink').href = "https://t.me/"+data.username;
     byId('joinModal').classList.add("is-active");
 }
 
 function showPointModal(data) {
-    console.log(data);
-    byId('pointDesc').innerHTML = data.description.replace(/(?:\r\n|\r|\n)/g, '<br>');
-    byId('pointImage').src = data.photo.Path;
+    byId('pointName').innerHTML = data.title;
+    byId('pointUsername').innerHTML = "@"+data.username;
+    byId('pointText').innerHTML = data.description;
     byId('pointModal').classList.add("is-active");
 }
 

@@ -17,6 +17,10 @@
         .ol-control button {
             background-color: #f14668;
         }
+        .modal-content {
+            width: 90%;
+            max-width: 800px;
+        }
     </style>
 </head>
 
@@ -60,9 +64,9 @@
             <article class="media">
                 <div class="media-content">
                     <div class="content">
-                        <h1 id="joinTitle" class="title"></h1>
-                        <p><span id="joinCount"></span> members</p>
-                        <p id="joinDesc"></p>
+                        <h1 id="joinTitle" class="title"> </h1>
+                        <h2 class="subtitle"><span id="joinCount"></span> участников</h2>
+                        <div id="joinText"></div>
                         <a id="joinLink" class="button is-danger">Join</a>
                     </div>
                 </div>
@@ -78,11 +82,9 @@
             <article class="media">
                 <div class="media-content">
                     <div class="content">
-                        <p class="image is-square">
-                            <img id="pointImage" class="has-ratio"
-                                 style="max-width:100%;width:auto;max-height:100%;height:auto;" alt=""/>
-                        </p>
-                        <p id="pointDesc"></p>
+                        <h1 id="pointName" class="title"></h1>
+                        <p id="pointUsername"></p>
+                        <div id="pointText"></div>
                     </div>
                 </div>
             </article>
@@ -171,6 +173,9 @@
                 if (features.length === 1) {
                     if (features[0].get("group")) {
                         showJoinModal(features[0].get('group'));
+                    }
+                    if (features[0].get("point")) {
+                        showPointModal(features[0].get('point'));
                     }
                 }
             });
