@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -19,7 +18,6 @@ type WebServer struct {
 	tg         client.AbstractClient
 	store      storage.Storage
 	loader     *loaders.ChannelInfoLoader
-	router     *mux.Router
 	logger     *logrus.Entry
 }
 
@@ -30,25 +28,25 @@ func New(addr string, documentRootDir string, tgClient client.AbstractClient, st
 		tg:         tgClient,
 		store:      store,
 		loader:     loader,
-		router:     mux.NewRouter(),
 		logger:     logger.WithField("package", "web_server"),
 	}
 }
 
-func (s *WebServer) routes() {
-	s.router.HandleFunc("/list", s.handleList()).Methods("GET")
-	s.router.HandleFunc("/health", s.handleHealth()).Methods("GET")
-	s.router.PathPrefix("/").Handler(http.FileServer(http.Dir(s.docRootDir))).Methods("GET")
+func (s *WebServer) router() http.Handler {
+	r := mux.NewRouter()
+	r.HandleFunc("/list", s.handleList()).Methods("GET")
+	r.HandleFunc("/health", s.handleHealth()).Methods("GET")
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(s.docRootDir))).Methods("GET")
+	return r
 }
 
 func (s *WebServer) Listen() error {
 	srv := &http.Server{
-		Handler:      handlers.LoggingHandler(os.Stdout, s.router),
+		Handler:      handlers.LoggingHandler(s.logger.Writer(), s.router()),
 		Addr:         s.addr,
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
-	s.routes()
 	s.logger.Infof("Listen on %s", s.addr)
 	if err := srv.ListenAndServe(); err != nil {
 		return fmt.Errorf("can't start web server: %v", err)
