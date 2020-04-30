@@ -153,10 +153,6 @@ function loadData() {
         });
 }
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-}
-
 function radius(count) {
     return 10 + Math.log(count) * 3;
 }
