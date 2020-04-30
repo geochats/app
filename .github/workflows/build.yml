@@ -17,7 +17,7 @@ jobs:
       - name: Push Docker image
         run: docker push geochats/app:${GITHUB_REF##*/}
       - name: Push Docker image
-        run: echo ${{ secrets.TELEGRAM_TO }} ${{ secrets.TELEGRAM_TOKEN }}
+        run: echo "${{ secrets.TELEGRAM_TO }} ${{ secrets.TELEGRAM_TOKEN }}"
       - name: Telegram Notify
         uses: appleboy/telegram-action@0.0.3
         with:
