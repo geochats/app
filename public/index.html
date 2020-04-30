@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Митинг.Линк</title>
+    <title>Miting.Link</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
@@ -97,12 +96,21 @@
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList"></script>
 <script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
-<script src="./index.js"></script>
+<script src="./static/index.js"></script>
 <script type="text/javascript">
     const initialCoords = [88.78367097860782, 60.317092090457066];
     const initialZoom = 4;
     const clusterDistance = 30;
     let points, groups;
+
+    // IE
+    if (navigator.browserLanguage) {
+        console.log(navigator.browserLanguage);
+    }
+    // All other vendors
+    else if (navigator.language) {
+        console.log(navigator.language);
+    }
 
     loadData().then(function (data) {
 
@@ -110,7 +118,7 @@
             center: ol.proj.fromLonLat(initialCoords),
             zoom: initialZoom
         });
-        const map = buildMap(view, data.points, data.groups);
+        buildMap(view, data.points, data.groups);
 
         const urlParts = document.URL.split('#');
         if (urlParts.length > 1) {
@@ -131,6 +139,7 @@
                 });
                 showPointModal(p);
             }
+            location.hash = "";
         }
     })
 
