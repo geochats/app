@@ -54,6 +54,9 @@ function buildMap(view, points, groups) {
     });
     map.on('singleclick', function (evt) {
         clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
+            if (clusterFeatures.length < 1) {
+                return;
+            }
             view.animate({
                 center: clusterFeatures[0].getGeometry().getCoordinates(),
                 zoom: view.getZoom() + 1,
