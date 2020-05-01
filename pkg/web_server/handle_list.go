@@ -3,7 +3,6 @@ package web_server
 import (
 	"fmt"
 	"geochats/pkg/types"
-	"github.com/boltdb/bolt"
 	"net/http"
 )
 
@@ -12,7 +11,6 @@ func (s *WebServer) handleList() http.HandlerFunc {
 		ID           string      `json:"id"`
 		Username     string      `json:"username"`
 		Title        string      `json:"title"`
-		Userpic      types.Image `json:"userpic"`
 		MembersCount int32       `json:"count"`
 		Latitude     float64     `json:"latitude"`
 		Longitude    float64     `json:"longitude"`
@@ -26,59 +24,50 @@ func (s *WebServer) handleList() http.HandlerFunc {
 		resp := new(respSpec)
 
 		points := make([]types.Point, 0)
-		groups := make([]types.Group, 0)
 		if r.URL.Query().Get("random") != "" {
 			// TODO хорошо бы заменить на RandomStorage
 			f := types.NewRandomFixturer("fake")
 			for i := 0; i < 100; i++ {
-				points = append(points, f.Point())
+				points = append(points, f.Single())
 			}
 			for i := 0; i < 10; i++ {
-				groups = append(groups, f.Group())
+				points = append(points, f.Group())
 			}
 		} else {
-			err := s.store.GetConn().View(func(tx *bolt.Tx) error {
-				var err error
-				points, err = s.store.ListPoint(tx)
-				if err != nil {
-					return fmt.Errorf("can't load points: %v", err)
-				}
-				groups, err = s.store.ListGroups(tx)
-				if err != nil {
-					return fmt.Errorf("can't load groups: %v", err)
-				}
-				return nil
-			})
+			tx, err := s.store.Begin(false)
 			if err != nil {
-				s.responseWithErrorJSON(w, fmt.Errorf("can't load points: %v", err))
+				s.responseWithErrorJSON(w, fmt.Errorf("can't start transaction: %v", err))
+				return
+			}
+			points, err = s.store.ListGroups(tx)
+			if err != nil {
+				s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
 				return
 			}
 		}
 		resp.Points = make([]respMarker, 0)
+		resp.Groups = make([]respMarker, 0)
 		for _, p := range points {
-			if p.Published {
+			if !p.Published {
+				continue
+			}
+			if p.IsSingle {
 				resp.Points = append(resp.Points, respMarker{
-					ID:        p.PublicID(),
+					ID:        p.HashedID(),
 					Username:  p.Username,
-					Title:     p.Name,
+					Title:     "",
 					Latitude:  p.Latitude,
 					Longitude: p.Longitude,
 					Text:      p.TextHTML(),
 				})
-			}
-		}
-		resp.Groups = make([]respMarker, 0)
-		for _, g := range groups {
-			if g.Complete() {
+			} else {
 				resp.Groups = append(resp.Groups, respMarker{
-					ID:           fmt.Sprintf("%d", g.ChatID),
-					Title:        g.Title,
-					Username:     g.Username,
-					Userpic:      g.Userpic,
-					MembersCount: g.MembersCount,
-					Latitude:     g.Latitude,
-					Longitude:    g.Longitude,
-					Text:         g.TextHTML(),
+					ID:           fmt.Sprintf("%d", p.ChatID),
+					Username:     p.Username,
+					Latitude:     p.Latitude,
+					Longitude:    p.Longitude,
+					MembersCount: p.MembersCount,
+					Text:         p.TextHTML(),
 				})
 			}
 		}

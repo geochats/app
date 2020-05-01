@@ -22,5 +22,5 @@ jobs:
         with:
           chat: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          status: ${{ job.status }} 
+          status: ${{ job.status }}
 

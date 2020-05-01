@@ -7,7 +7,9 @@ import (
 	"geochats/pkg/downloader"
 	"geochats/pkg/loaders"
 	"geochats/pkg/storage"
+	"geochats/pkg/types"
 	"github.com/Arman92/go-tdlib"
+	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
 	"regexp"
 	"runtime/debug"
@@ -26,7 +28,7 @@ const (
 type Bot struct {
 	cl     client.AbstractClient
 	dl     downloader.Downloader
-	store  storage.Storage
+	store  *storage.Storage
 	ch     *loaders.ChannelInfoLoader
 	logger *logrus.Logger
 	me *tdlib.User
@@ -37,7 +39,7 @@ type Flow struct {
 	Status string
 }
 
-func New(cl client.AbstractClient, store storage.Storage, ch *loaders.ChannelInfoLoader, downloader downloader.Downloader, logger *logrus.Logger) *Bot {
+func New(cl client.AbstractClient, store *storage.Storage, ch *loaders.ChannelInfoLoader, downloader downloader.Downloader, logger *logrus.Logger) *Bot {
 	return &Bot{
 		cl:     cl,
 		store:  store,
@@ -76,52 +78,66 @@ func (b *Bot) Run() (err error) {
 }
 
 func (b *Bot) Process(msg *tdlib.Message) error {
-	defer func() {
-		if r := recover(); r != nil {
-			b.logger.Errorf("Panic in bot.Process():%#v\n%s", r, string(debug.Stack()))
-		}
-	}()
+	return b.store.InTransaction(true, func(tx pgx.Tx) error {
+		defer func() {
+			if r := recover(); r != nil {
+				b.logger.Errorf("Panic in bot.Process():%#v\n%s", r, string(debug.Stack()))
+			}
+		}()
 
-	chat, err := b.cl.GetChat(msg.ChatId)
-	if err != nil {
-		return fmt.Errorf("can't get processed message chat: %v", err)
-	}
-
-	text := tryExtractText(msg)
-	switch chat.Type.GetChatTypeEnum() {
-	case tdlib.ChatTypePrivateType:
-		if err := b.processPrivateMessage(msg, text, chat); err != nil {
-			return fmt.Errorf("can't process private tg message: %v", err)
+		text := tryExtractText(msg)
+		chat, err := b.cl.GetChat(msg.ChatId)
+		if err != nil {
+			return fmt.Errorf("can't get processed message chat: %v", err)
 		}
-	case tdlib.ChatTypeSupergroupType:
-		if err := b.processGroupMessage(msg, text, chat); err != nil {
-			return fmt.Errorf("can't process group tg message: %v", err)
-		}
-	default:
-		return b.sendText(msg, "Бот умеет работать только в публичных группах или в приватном чате")
-	}
 
-	return nil
+		point, err := b.store.GetPoint(tx, msg.ChatId)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				point, err = b.store.AddPoint(tx, msg.ChatId, chat.Type.GetChatTypeEnum() == tdlib.ChatTypePrivateType)
+				if err != nil {
+					return fmt.Errorf("can't get insert point: %v", err)
+				}
+			} else {
+				return fmt.Errorf("can't get point: %v", err)
+			}
+		}
+
+		switch chat.Type.GetChatTypeEnum() {
+		case tdlib.ChatTypePrivateType:
+			if err := b.processPrivateMessage(msg, tx, point, text, chat); err != nil {
+				return fmt.Errorf("can't process private tg message: %v", err)
+			}
+		case tdlib.ChatTypeSupergroupType:
+			if err := b.processGroupMessage(msg, tx, point, text, chat); err != nil {
+				return fmt.Errorf("can't process group tg message: %v", err)
+			}
+		default:
+			return b.sendText(msg, "Бот умеет работать только в публичных группах или в приватном чате")
+		}
+
+		return nil
+	})
 }
 
-func (b *Bot) processPrivateMessage(msg *tdlib.Message, text string, _ *tdlib.Chat) error {
+func (b *Bot) processPrivateMessage(msg *tdlib.Message, tx pgx.Tx, point *types.Point, text string, _ *tdlib.Chat) error {
 	switch {
 	case msg.Content.GetMessageContentEnum() == tdlib.MessageLocationType || msg.Content.GetMessageContentEnum() == tdlib.MessageVenueType:
 		return b.ActionShowCoords(msg)
 	case strings.HasPrefix(text, locationCommand):
-		return b.ActionSingleSetLocation(msg)
+		return b.ActionPointSetLocation(msg, tx, point)
 	case strings.HasPrefix(text, textCommand):
-		return b.ActionSingleSetText(msg)
+		return b.ActionPointSetText(msg, tx, point)
 	case strings.HasPrefix(text, publishCommand):
-		return b.ActionSingleChangeVisibility(msg, true)
+		return b.ActionPointChangeVisibilityEnable(msg, tx, point, true)
 	case strings.HasPrefix(text, hideCommand):
-		return b.ActionSingleChangeVisibility(msg, false)
+		return b.ActionPointChangeVisibilityEnable(msg, tx, point, false)
 	default:
-		return b.ActionSingleShowHelp(msg)
+		return b.ActionShowHelp(msg, true)
 	}
 }
 
-func (b *Bot) processGroupMessage(msg *tdlib.Message, text string, chat *tdlib.Chat) error {
+func (b *Bot) processGroupMessage(msg *tdlib.Message, tx pgx.Tx, point *types.Point, text string, chat *tdlib.Chat) error {
 	admins, err := b.cl.GetChatAdministrators(chat.Id)
 	if err != nil {
 		return fmt.Errorf("can't get chat admins: %v", err)
@@ -139,15 +155,15 @@ func (b *Bot) processGroupMessage(msg *tdlib.Message, text string, chat *tdlib.C
 
 	switch {
 	case strings.HasPrefix(text, locationCommand):
-		return b.ActionGroupSetLocation(msg)
+		return b.ActionPointSetLocation(msg, tx, point)
 	case strings.HasPrefix(text, textCommand):
-		return b.ActionGroupSetText(msg)
+		return b.ActionPointSetText(msg, tx, point)
 	case strings.HasPrefix(text, publishCommand):
-		return b.ActionGroupChangeVisibilityEnable(msg, true)
+		return b.ActionPointChangeVisibilityEnable(msg, tx, point, true)
 	case strings.HasPrefix(text, hideCommand):
-		return b.ActionGroupChangeVisibilityEnable(msg, false)
+		return b.ActionPointChangeVisibilityEnable(msg, tx, point, false)
 	default:
-		return b.ActionGroupShowHelp(msg)
+		return b.ActionShowHelp(msg, false)
 	}
 }
 

@@ -5,3 +5,4 @@ kubernetes
 public/c
 groups.db
 .github
+.env

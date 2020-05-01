@@ -1,7 +1,5 @@
 # github.com/Arman92/go-tdlib v0.0.0-20191103185020-a66012edd023 => github.com/c0re100/go-tdlib v0.0.0-20200201014419-c5837ed8eeea
 github.com/Arman92/go-tdlib
-# github.com/boltdb/bolt v1.3.1
-github.com/boltdb/bolt
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/gomarkdown/markdown v0.0.0-20200316172748-fd1f3374857d
@@ -13,7 +11,26 @@ github.com/gomarkdown/markdown/parser
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.7.3
 github.com/gorilla/mux
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+# github.com/jackc/chunkreader/v2 v2.0.1
+github.com/jackc/chunkreader/v2
+# github.com/jackc/pgconn v1.5.0
+github.com/jackc/pgconn
+github.com/jackc/pgconn/internal/ctxwatch
+github.com/jackc/pgconn/stmtcache
+# github.com/jackc/pgio v1.0.0
+github.com/jackc/pgio
+# github.com/jackc/pgpassfile v1.0.0
+github.com/jackc/pgpassfile
+# github.com/jackc/pgproto3/v2 v2.0.1
+github.com/jackc/pgproto3/v2
+# github.com/jackc/pgservicefile v0.0.0-20200307190119-3430c5407db8
+github.com/jackc/pgservicefile
+# github.com/jackc/pgtype v1.3.0
+github.com/jackc/pgtype
+# github.com/jackc/pgx/v4 v4.6.0
+github.com/jackc/pgx/v4
+github.com/jackc/pgx/v4/internal/sanitize
+# github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/microcosm-cc/bluemonday v1.0.2
 github.com/microcosm-cc/bluemonday
@@ -21,13 +38,34 @@ github.com/microcosm-cc/bluemonday
 github.com/pmezard/go-difflib/difflib
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
-# github.com/stretchr/objx v0.1.1
+# github.com/stretchr/objx v0.2.0
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.2.2
+# github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
-# golang.org/x/net v0.0.0-20181220203305-927f97764cc3
+# golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+golang.org/x/crypto/pbkdf2
+# golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 golang.org/x/net/html
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 golang.org/x/sys/unix
+# golang.org/x/text v0.3.2
+golang.org/x/text/cases
+golang.org/x/text/internal
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/language
+golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
+golang.org/x/text/secure/precis
+golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
+golang.org/x/text/width
+# golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
