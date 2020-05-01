@@ -72,6 +72,8 @@ ENV \
 COPY --from=build /app/app /app/app
 COPY --from=build /app/public /app/public
 COPY --from=build /etc/localtime /etc/localtime
+COPY --from=build /bin/migrate  /bin/migrate
+COPY --from=build /app/wait-for-it.sh /wait-for-it.sh
 RUN set -ex \
     apk add --no-cache gcc g++ zlib-dev openssl-dev libc6-compat && \
     apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
