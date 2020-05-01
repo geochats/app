@@ -57,23 +57,21 @@ func main() {
 		"pgDsn":       pgDsn,
 	})
 
-	cl, err := client.New(tgAppID, tgAppHash, tmpDir)
-	if err != nil {
-		log.Panicf("can't create tg client: %v", err)
-	}
-	if err := client.EnsureBotAuth(cl, botApiToken, 10, 2*time.Second); err != nil {
-		log.Panicf("can't auth tg bot: %v", err)
-	}
-
 	store, err := storage.New(pgDsn)
 	if err != nil {
 		log.Panicf("can't create storage: %v", err)
 	}
 
-	dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
-	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
-
 	if !botDisabled {
+		cl, err := client.New(tgAppID, tgAppHash, tmpDir)
+		if err != nil {
+			log.Panicf("can't create tg client: %v", err)
+		}
+		if err := client.EnsureBotAuth(cl, botApiToken, 10, 2*time.Second); err != nil {
+			log.Panicf("can't auth tg bot: %v", err)
+		}
+		dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
+		loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
 		b := bot.New(cl, store, loader, dl, logger)
 		go func() {
 			if err := b.Run(); err != nil {
