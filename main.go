@@ -18,9 +18,9 @@ func main() {
 	var (
 		verbose = os.Getenv("VERBOSE") != ""
 
-		workDir   = ensureEnv("VAR_DIR")
+		tmpDir    = ensureEnv("TMP_DIR")
 		publicDir = ensureEnv("PUBLIC_DIR")
-		dbFile    = ensureEnv("DB_FILE")
+		pgDsn     = ensureEnv("POSTGRES_DSN")
 
 		tgAppID     = ensureEnv("TG_APP_ID")
 		tgAppHash   = ensureEnv("TG_APP_HASH")
@@ -38,17 +38,17 @@ func main() {
 		tdlib.SetLogVerbosityLevel(5)
 	}
 	logger.Infof("Options: %#v", log.Fields{
-		"workDir":     workDir,
+		"tmpDir":     tmpDir,
 		"publicDir":   publicDir,
 		"verbose":     verbose,
 		"tgAppID":     tgAppID,
 		"tgAppHash":   tgAppHash,
 		"botApiToken": botApiToken,
 		"listen":      listen,
-		"dbFile":      dbFile,
+		"pgDsn":      pgDsn,
 	})
 
-	cl, err := client.New(tgAppID, tgAppHash, workDir)
+	cl, err := client.New(tgAppID, tgAppHash, tmpDir)
 	if err != nil {
 		log.Panicf("can't create tg client: %v", err)
 	}
@@ -56,7 +56,7 @@ func main() {
 		log.Panicf("can't auth tg bot: %v", err)
 	}
 
-	store, err := storage.New(dbFile)
+	store, err := storage.New(pgDsn)
 	if err != nil {
 		log.Panicf("can't create storage: %v", err)
 	}

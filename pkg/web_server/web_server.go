@@ -16,12 +16,12 @@ type WebServer struct {
 	addr       string
 	docRootDir string
 	tg         client.AbstractClient
-	store      storage.Storage
+	store      *storage.Storage
 	loader     *loaders.ChannelInfoLoader
 	logger     *logrus.Entry
 }
 
-func New(addr string, documentRootDir string, tgClient client.AbstractClient, store storage.Storage, loader *loaders.ChannelInfoLoader, logger *logrus.Logger) *WebServer {
+func New(addr string, documentRootDir string, tgClient client.AbstractClient, store *storage.Storage, loader *loaders.ChannelInfoLoader, logger *logrus.Logger) *WebServer {
 	return &WebServer{
 		addr:       addr,
 		docRootDir: documentRootDir,

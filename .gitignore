@@ -4,3 +4,4 @@ var
 geochats
 public/c
 var/groups.db
+.env

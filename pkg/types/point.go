@@ -10,16 +10,17 @@ import (
 )
 
 type Point struct {
-	ChatID    int64
-	Name      string
-	Username  string
-	Latitude  float64
-	Longitude float64
-	Text      string
-	Published bool
+	ChatID       int64
+	Username     string
+	Text         string
+	Latitude     float64
+	Longitude    float64
+	MembersCount int32
+	Published    bool
+	IsSingle     bool
 }
 
-func (p *Point) PublicID() string {
+func (p *Point) HashedID() string {
 	h := sha256.Sum256([]byte(fmt.Sprintf("%d", p.ChatID)))
 	return fmt.Sprintf("%x", h)
 }
@@ -33,8 +34,12 @@ func (p *Point) TextHTML() string {
 	return bluemonday.UGCPolicy().Sanitize(h)
 }
 
-type Image struct {
-	Width  int32
-	Height int32
-	Path   string
+func (p *Point) PublicURI() string {
+	flag := "g"
+	id := fmt.Sprintf("%d", p.ChatID)
+	if p.IsSingle {
+		flag = "s"
+		id = p.HashedID()
+	}
+	return fmt.Sprintf("https://miting.link/#%s:%s", flag, id)
 }
