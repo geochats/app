@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: app
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      initContainers:
+        - name: migrations
+          image: "geochats/app:{{ .Values.app.imageVersion }}"
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: {{ .Values.app.db.host }}
+            - name: DB_USER
+              value: {{ .Values.app.db.user }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: db_password
+            - name: DB_NAME
+              value: {{ .Values.app.db.name }}
+          command:
+            - sh
+            - -c
+            - echo "Apply migrations..." && migrate -path /migrations -database postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}\?sslmode=disable -verbose up
+      containers:
+        - name: default
+          image: "geochats/app:{{ .Values.app.imageVersion }}"
+          env:
+            - name: LISTEN
+              value: ":8000"
+            - name: DB_HOST
+              value: {{ .Values.app.db.host }}
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: {{ .Values.app.db.user }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: db_password
+            - name: DB_NAME
+              value: {{ .Values.app.db.name }}
+            - name: TG_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: tg_app_id
+            - name: TG_APP_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: tg_app_hash
+            - name: BOT_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: tg_bot_token
+            - name: BOT_DISABLED
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            failureThreshold: 3

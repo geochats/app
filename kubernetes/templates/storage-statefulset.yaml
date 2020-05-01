@@ -1,0 +1,48 @@
+{{- if .Values.storage.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: storage
+spec:
+  selector:
+    matchLabels:
+      app: storage
+  serviceName: storage
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: storage
+    spec:
+      containers:
+        - name: default
+          image: postgres:9.4
+          ports:
+            - name: psql
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.app.db.name }}
+            - name: POSTGRES_USER
+              value: {{ .Values.app.db.user }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: geochats
+                  key: db_password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: geochats-db-volume
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: geochats-db-volume
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.storage.size }}
+
+{{- end }}

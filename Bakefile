@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Docs: https://github.com/kyleburton/bake
+
+set -euo pipefail
+
+source .env
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+bake_task stage-deploy "Deploy to stage"
+function stage-deploy() {
+    helm upgrade geochats-stage ./kubernetes --namespace geochats-stage --values ./kubernetes/values.yaml --values ./kubernetes/values.prod.yaml --values ./kubernetes/values.stage.yaml
+}
+
+bake_task prod-deploy "Deploy to prod"
+function prod-deploy() {
+    helm upgrade geochats "${DIR}"/kubernetes --namespace geochats --values "${DIR}"/kubernetes/values.yaml --values "${DIR}"/kubernetes/values.prod.yaml
+}
+
+bake_task local-psql "Run docker psql"
+function local-psql() {
+    docker run -it -e POSTGRES_PASSWORD="${DB_PASS}" -p 5432:5432 postgres
+}
+
+bake_task local-run "Run docker psql"
+function local-run() {
+    migrate -path ./db -database "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable" -verbose up
+    go run ./main.go
+}

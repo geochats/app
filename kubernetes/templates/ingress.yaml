@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: geochats
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.app.publicHost }}
+  rules:
+    - host: "{{ .Values.app.publicHost }}"
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: app
+              servicePort: 80
+
+

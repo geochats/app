@@ -1,0 +1,16 @@
+app:
+  publicHost: geochats.test
+  replicas: 1
+  imageVersion: master
+  db:
+    host: storage
+    user: geochats
+    pass: "$geochats"
+    name: geochats
+  tg:
+    appId: "1111"
+    appHash: aaaaaaaaaaaaaaaaaaaaaaaa
+    botToken: 1111111111:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+storage:
+  enabled: true
+  size: 1Gi

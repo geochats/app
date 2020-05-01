@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage
+  labels:
+    app: storage
+spec:
+  type: ClusterIP
+  ports:
+    - name: psql
+      targetPort: psql
+      port: 5432
+  selector:
+    app: storage
