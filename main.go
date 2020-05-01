@@ -33,6 +33,7 @@ func main() {
 		tgAppID     = ensureEnv("TG_APP_ID")
 		tgAppHash   = ensureEnv("TG_APP_HASH")
 		botApiToken = os.Getenv("BOT_API_TOKEN")
+		botDisabled = os.Getenv("BOT_DISABLED") != ""
 
 		listen = ensureEnv("LISTEN")
 
@@ -72,12 +73,14 @@ func main() {
 	dl := downloader.NewSyncDownloader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
 	loader := loaders.NewChannelInfoLoader(cl, fmt.Sprintf("%s/c", publicDir), "/c")
 
-	b := bot.New(cl, store, loader, dl, logger)
-	go func() {
-		if err := b.Run(); err != nil {
-			log.Fatalf("error in bot run: %v", err)
-		}
-	}()
+	if !botDisabled {
+		b := bot.New(cl, store, loader, dl, logger)
+		go func() {
+			if err := b.Run(); err != nil {
+				log.Fatalf("error in bot run: %v", err)
+			}
+		}()
+	}
 
 	srv := web_server.New(listen, publicDir, cl, store, loader, logger)
 	if err := srv.Listen(); err != nil {

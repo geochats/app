@@ -9,7 +9,7 @@ func (b *Bot) ActionShowHelp(msg *tdlib.Message, single bool) error {
 			"Чтобы добавить одиночный пикет, нужно всего-то:\n\n" +
 				"- быть готовым к тому, что на карте будет ваше имя и юзернейм\n" +
 				"- указать его место, командой\n" +
-				"      <code>%s широта, долгота</code>\n" +
+				"      <pre>%s широта, долгота</pre>\n" +
 				"- отправить боту текст воззвания, в формате <a href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet\">Markdown</a>\n" +
 				"      <code>%s текст</code>\n" +
 				"- включить это все, командой\n" +
