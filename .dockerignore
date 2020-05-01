@@ -3,6 +3,6 @@ kubernetes
 .DS_Store
 .idea
 public/c
-groups.db
 .github
 .env
+kubernetes
