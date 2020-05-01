@@ -16,11 +16,4 @@ jobs:
         run: docker build . --tag geochats/app:${GITHUB_REF##*/}
       - name: Push Docker image
         run: docker push geochats/app:${GITHUB_REF##*/}
-      - name: Telegram Notify
-        uses: yanzay/notify-telegram@v0.1.0
-        if: always()
-        with:
-          chat: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          status: ${{ job.status }}
 
