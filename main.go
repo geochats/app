@@ -20,7 +20,15 @@ func main() {
 
 		tmpDir    = ensureEnv("TMP_DIR")
 		publicDir = ensureEnv("PUBLIC_DIR")
-		pgDsn     = ensureEnv("POSTGRES_DSN")
+
+		pgDsn = fmt.Sprintf(
+			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+			ensureEnv("DB_USER"),
+			ensureEnv("DB_PASS"),
+			ensureEnv("DB_HOST"),
+			ensureEnv("DB_PORT"),
+			ensureEnv("DB_NAME"),
+		)
 
 		tgAppID     = ensureEnv("TG_APP_ID")
 		tgAppHash   = ensureEnv("TG_APP_HASH")
@@ -38,14 +46,14 @@ func main() {
 		tdlib.SetLogVerbosityLevel(5)
 	}
 	logger.Infof("Options: %#v", log.Fields{
-		"tmpDir":     tmpDir,
+		"tmpDir":      tmpDir,
 		"publicDir":   publicDir,
 		"verbose":     verbose,
 		"tgAppID":     tgAppID,
 		"tgAppHash":   tgAppHash,
 		"botApiToken": botApiToken,
 		"listen":      listen,
-		"pgDsn":      pgDsn,
+		"pgDsn":       pgDsn,
 	})
 
 	cl, err := client.New(tgAppID, tgAppHash, tmpDir)
