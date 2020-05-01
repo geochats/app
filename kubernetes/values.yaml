@@ -9,7 +9,7 @@ app:
     name: geochats
   tg:
     appId: "1111"
-    appHash: aaaaaaaaaaaaaaaaaaaaaaaa
+    appHash: aaaaaaaaaaaaaaaaaaaaaaa
     botToken: 1111111111:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 storage:
   enabled: true
