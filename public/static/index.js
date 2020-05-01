@@ -44,9 +44,7 @@ function buildMap(view, points, groups) {
         target: 'map',
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM({
-                    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
-                }),
+                source: new ol.source.OSM(),
             }),
             clusters
         ],
