@@ -2,8 +2,6 @@ package web_server
 
 import (
 	"fmt"
-	"geochats/pkg/client"
-	"geochats/pkg/loaders"
 	"geochats/pkg/storage"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -15,19 +13,15 @@ import (
 type WebServer struct {
 	addr       string
 	docRootDir string
-	tg         client.AbstractClient
 	store      *storage.Storage
-	loader     *loaders.ChannelInfoLoader
 	logger     *logrus.Entry
 }
 
-func New(addr string, documentRootDir string, tgClient client.AbstractClient, store *storage.Storage, loader *loaders.ChannelInfoLoader, logger *logrus.Logger) *WebServer {
+func New(addr string, documentRootDir string, store *storage.Storage, logger *logrus.Logger) *WebServer {
 	return &WebServer{
 		addr:       addr,
 		docRootDir: documentRootDir,
-		tg:         tgClient,
 		store:      store,
-		loader:     loader,
 		logger:     logger.WithField("package", "web_server"),
 	}
 }

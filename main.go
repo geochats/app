@@ -82,7 +82,7 @@ func main() {
 		}()
 	}
 
-	srv := web_server.New(listen, publicDir, cl, store, loader, logger)
+	srv := web_server.New(listen, publicDir, store, logger)
 	if err := srv.Listen(); err != nil {
 		log.Panicf("can't create storage: %v", err)
 	}
