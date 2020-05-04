@@ -13,7 +13,15 @@ function stage-deploy() {
 
 bake_task prod-deploy "Deploy to prod"
 function prod-deploy() {
-    helm upgrade geochats "${DIR}"/kubernetes --namespace geochats --values "${DIR}"/kubernetes/values.yaml --values "${DIR}"/kubernetes/values.prod.yaml
+    if [ $# -ne 1 ]; then
+        bake_echo_red "Usage: bake prod-deploy <appImageVersion>"
+        exit
+    fi
+    helm upgrade geochats "${DIR}"/kubernetes \
+      --namespace geochats \
+      --values "${DIR}"/kubernetes/values.yaml \
+      --values "${DIR}"/kubernetes/values.prod.yaml \
+      --set app.imageVersion="${1}"
 }
 
 bake_task local-psql "Run docker psql"
