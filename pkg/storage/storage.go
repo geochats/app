@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"geochats/pkg/types"
 	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Storage struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func New(dsn string) (*Storage, error) {
-	conn, err := pgx.Connect(context.Background(), dsn)
+	conn, err := pgxpool.Connect(context.Background(), dsn)
 	if err != nil {
 		return nil, fmt.Errorf("can't connect to db: %v", err)
 	}
@@ -20,7 +21,10 @@ func New(dsn string) (*Storage, error) {
 }
 
 func (s *Storage) IsReady() bool {
-	return s.conn.Ping(context.Background()) == nil
+	for _, c := range s.conn.AcquireAllIdle(context.Background()) {
+		c.Release()
+	}
+	return true
 }
 
 func (s *Storage) Begin(writable bool) (pgx.Tx, error) {
@@ -81,15 +85,15 @@ func (s *Storage) GetPoint(tx pgx.Tx, chatID int64) (*types.Point, error) {
 
 func (s *Storage) AddPoint(tx pgx.Tx, chatID int64, isSingle bool) (*types.Point, error) {
 	_, err := tx.Exec(
-			context.Background(),
-			"INSERT INTO points(chat_id, is_single) VALUES ($1, $2)",
-			chatID,
-			isSingle)
+		context.Background(),
+		"INSERT INTO points(chat_id, is_single) VALUES ($1, $2)",
+		chatID,
+		isSingle)
 	if err != nil {
 		return nil, fmt.Errorf("can't insert point: %v", err)
 	}
 	return &types.Point{
-		ChatID: chatID,
+		ChatID:   chatID,
 		IsSingle: isSingle,
 	}, nil
 }
@@ -106,7 +110,7 @@ func (s *Storage) UpdatePoint(tx pgx.Tx, group *types.Point) error {
 		group.MembersCount,
 		group.Published,
 		group.IsSingle,
-		)
+	)
 	if err != nil {
 		return fmt.Errorf("can't update point")
 	}
@@ -136,4 +140,3 @@ func (s *Storage) ListGroups(tx pgx.Tx) ([]types.Point, error) {
 	}
 	return points, rows.Err()
 }
-
