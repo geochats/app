@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Miting.Link</title>
+    <title>Онлайн митинги</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
@@ -20,32 +20,88 @@
             width: 90%;
             max-width: 800px;
         }
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 560px;
+        }
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+        .ol-popup-closer:after {
+            content: "✖";
+        }
     </style>
 </head>
 
 <body>
 <div id="map" class="map" style="width:100%;height:100%;position:fixed"></div>
-<a href="https://t.me/miting_link_bot?start=1" class="button is-danger" style="top:.5em;right:.5em;position:fixed">+ пикет</a>
-<a href="https://t.me/miting_link_bot?startgroup=1" class="button is-danger" style="top:4em;right:.5em;position:fixed">+ митинг</a>
-<button id="helpButton" class="button is-large is-danger" style="display:none;">?</button>
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content">
+        <div class="content">
+            <h2>Хотите начать пикет или митинг в этом месте?</h2>
+            <ol>
+                <li class="content">
+                    <p>Чтобы создать пикет, Добавьте себе бота</p>
+                    <div class="buttons">
+                        <a href="https://t.me/miting_link_bot?start=1" target="_blank" class="button is-danger">Добавить бота</a>
+                    </div>
+                    <p>Чтобы создать митинг, добавьте бота в публичную группу митинга</p>
+                    <div class="buttons">
+                        <a href="https://t.me/miting_link_bot?startgroup=1" target="_blank" class="button is-danger">Добавить митинг</a>
+                    </div>
+                </li>
+                <li class="content">
+                    <p>Отправьте боту координаты пикета/митинга:</p>
+                    <p><code class="createPlace"></code></p>
+                </li>
+                <li class="content">
+                    <p>Отправьте боту лозунг:</p>
+                    <p><code>/text some text</code></p>
+                </li>
+                <li>
+                    <p>Опубликуйте пикет/митинг:</p>
+                    <p><code>/show</code></p>
+                </li>
+            </ol>
+            <p>Полный список команд, можно узнать у бота, отправив ему <code>/start</code>.</p>
+        </div>
+    </div>
+</div>
 <a href="https://github.com/geochats/app">
     <img src="./static/GitHub-Mark-32px.png" width="32" height="32" style="bottom:.5em;right:.5em;position:fixed" alt="Исходный код проекта"/>
 </a>
-<div id="helpModal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-content">
-        <div class="box">
-            <div class="container">
-                <div class="content">
-                    <h1 class="title">???</h1>
-                    <p><a href="https://t.me/miting_link_bot?start=1" class="button is-danger">Создать одиночный пикет</a></p>
-                    <p><a href="https://t.me/miting_link_bot?startgroup=1" class="button is-danger">Создать групповой митинг</a></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <button class="modal-close is-large" aria-label="close"></button>
-</div>
 <div id="joinModal" class="modal">
     <div class="modal-background"></div>
     <div class="modal-content">
@@ -82,28 +138,19 @@
     <button class="modal-close is-large" aria-label="close"></button>
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList"></script>
 <script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
-<script src="./static/index.js"></script>
+<script src="index.js"></script>
 <script type="text/javascript">
     const initialCoords = [88.78367097860782, 60.317092090457066];
     const initialZoom = 4;
     const clusterDistance = 30;
     let points, groups;
 
-    // IE
-    if (navigator.browserLanguage) {
-        console.log(navigator.browserLanguage);
-    }
-    // All other vendors
-    else if (navigator.language) {
-        console.log(navigator.language);
-    }
-
     loadData().then(function (data) {
-
         const view = new ol.View({
             center: ol.proj.fromLonLat(initialCoords),
             zoom: initialZoom
@@ -131,14 +178,6 @@
             }
             location.hash = "";
         }
-    })
-
-    byId('helpButton').onclick = showHelpModal;
-    Array.from(byClass("modal-close")).forEach(element => {
-        element.onclick = hideModals;
-    });
-    Array.from(byClass("modal-background")).forEach(element => {
-        element.onclick = hideModals;
     });
 </script>
 

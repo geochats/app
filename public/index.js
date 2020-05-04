@@ -1,18 +1,25 @@
 function buildMap(view, points, groups) {
-    const groupVectorSource = new ol.source.Vector({
-        features: buildGroupsFeatures(groups).concat(buildPointsFeatures(points))
-    });
-
-    const clusterSource = new ol.source.Cluster({
-        distance: clusterDistance,
-        source: groupVectorSource
+    const popupContainer = byId('popup');
+    const popupContent = byId('popup-content');
+    const popupCloser = byId('popup-closer');
+    const popupOverlay = new ol.Overlay({
+        element: popupContainer,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
     });
 
     const picketStyle = buildSingleStyle();
     const groupStyleCache = {};
     const clusterStyleCache = {};
     const clusters = new ol.layer.Vector({
-        source: clusterSource,
+        source: new ol.source.Cluster({
+            distance: clusterDistance,
+            source: new ol.source.Vector({
+                features: buildGroupsFeatures(groups).concat(buildPointsFeatures(points))
+            })
+        }),
         style: function (feature) {
             const groupsAndPoint = feature.get('features');
             if (groupsAndPoint.length === 1) {
@@ -48,29 +55,40 @@ function buildMap(view, points, groups) {
             }),
             clusters
         ],
+        overlays: [popupOverlay],
         view: view
     });
     map.on('singleclick', function (evt) {
         clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
-            if (clusterFeatures.length < 1) {
-                return;
-            }
-            view.animate({
-                center: clusterFeatures[0].getGeometry().getCoordinates(),
-                zoom: view.getZoom() + 1,
-                duration: 200
-            });
-            const features = clusterFeatures[0].get("features");
-            if (features.length === 1) {
-                if (features[0].get("group")) {
-                    showJoinModal(features[0].get('group'));
-                }
-                if (features[0].get("point")) {
-                    showPointModal(features[0].get('point'));
+            if (clusterFeatures.length === 0) {
+                showCreateModal(popupOverlay, popupContent, evt.coordinate);
+            } else {
+                view.animate({
+                    center: clusterFeatures[0].getGeometry().getCoordinates(),
+                    zoom: view.getZoom() + 1,
+                    duration: 200
+                });
+                const features = clusterFeatures[0].get("features");
+                if (features.length === 1) {
+                    if (features[0].get("group")) {
+                        showJoinModal(features[0].get('group'));
+                    }
+                    if (features[0].get("point")) {
+                        showPointModal(features[0].get('point'));
+                    }
                 }
             }
         });
     });
+
+    Array.from(byClass("modal-background")).forEach(element => {
+        element.onclick = hideModals;
+    });
+    popupCloser.onclick = function(){
+        popupOverlay.setPosition(undefined);
+        popupCloser.blur();
+        return false;
+    };
 
     return map;
 }
@@ -158,10 +176,6 @@ function radius(count) {
     return 10 + Math.log(count) * 3;
 }
 
-function showHelpModal() {
-    byId('helpModal').classList.add("is-active");
-}
-
 function showJoinModal(data) {
     byId('joinTitle').innerHTML = data.title;
     byId('joinCount').innerHTML = data.count;
@@ -175,6 +189,14 @@ function showPointModal(data) {
     byId('pointUsername').innerHTML = "@"+data.username;
     byId('pointText').innerHTML = data.description;
     byId('pointModal').classList.add("is-active");
+}
+
+function showCreateModal(overlay, content, coordinate) {
+    const longLat = ol.proj.toLonLat(coordinate)
+    Array.from(byClass("createPlace")).forEach(element => {
+        element.innerHTML = '/place ' + longLat[1].toFixed(6).toString() + ', ' + longLat[0].toFixed(6).toString();
+    });
+    overlay.setPosition(coordinate);
 }
 
 function hideModals() {
