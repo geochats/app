@@ -19,7 +19,7 @@ func (b *Bot) ActionShowHelp(msg *tdlib.Message, single bool) error {
 				"Чтобы прекратить это все, отправьте <code>%s</code>.\n"+
 				"\n"+
 				"Чтобы добавить групповой митинг, вы должны быть администратором в публичной группе митинга. "+
-				"Добавьте бота в группу и отправьте ему <code>%s@%s</code> <a href=\"tg://user?id=miting_link_bot?startgroup=1\">aaa</a>",
+				"Добавьте бота в группу и отправьте ему <code>%s@%s</code>.",
 			locationCommand,
 			textCommand,
 			publishCommand,
@@ -37,6 +37,9 @@ func (b *Bot) ActionShowHelp(msg *tdlib.Message, single bool) error {
 			"<pre><code>  %s текст</code></pre>\n"+
 			"- включите это все, командой:\n"+
 			"<pre><code>  %s</code></pre>\n"+
+			"\n"+
+			"Чтобы скрыть митинг, отправьте боту"+
+			"<pre><code>  %s</code></pre>"+
 			"\n"+
 			"Чтобы создать одиночный пикет, напишите <code>%s</code> боту @%s напрямую.",
 		locationCommand,
