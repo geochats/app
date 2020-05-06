@@ -12,6 +12,7 @@
           href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css"
           type="text/css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
     <style>
         .ol-control button {
             background-color: #f14668;
@@ -143,8 +144,10 @@
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList"></script>
 <script src="https://cdn.jsdelivr.net/npm/fetch-polyfill@0.8.2/fetch.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
 <script src="index.js"></script>
 <script type="text/javascript">
+    const mapboxToken = 'pk.eyJ1Ijoia29yY2hhc2EiLCJhIjoiY2s5ZXRucnd3MDUxdDNwcnZmdDR5dGx6MiJ9.hD0hquMVIvL2CnZCD4o3fw';
     const initialCoords = [88.78367097860782, 60.317092090457066];
     const initialZoom = 4;
     const clusterDistance = 30;
@@ -155,7 +158,7 @@
             center: ol.proj.fromLonLat(initialCoords),
             zoom: initialZoom
         });
-        buildMap(view, data.points, data.groups);
+        buildMap(mapboxToken, view, data.points, data.groups);
 
         const urlParts = document.URL.split('#');
         if (urlParts.length > 1) {

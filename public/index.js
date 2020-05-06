@@ -1,4 +1,4 @@
-function buildMap(view, points, groups) {
+function buildMap(mapBoxToken, view, points, groups) {
     const popupContainer = byId('popup');
     const popupContent = byId('popup-content');
     const popupCloser = byId('popup-closer');
@@ -51,7 +51,9 @@ function buildMap(view, points, groups) {
         target: 'map',
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM(),
+                source: new ol.source.XYZ({
+                    url: 'https://api.mapbox.com/styles/v1/korchasa/ck9vvwko002wt1imp46a6tx22/tiles/256/{z}/{x}/{y}?access_token='+mapBoxToken
+                })
             }),
             clusters
         ],
@@ -59,6 +61,7 @@ function buildMap(view, points, groups) {
         view: view
     });
     map.on('singleclick', function (evt) {
+        console.log(clusters);
         clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
             if (clusterFeatures.length === 0) {
                 showCreateModal(popupOverlay, popupContent, evt.coordinate);
