@@ -21,10 +21,31 @@ func New(dsn string) (*Storage, error) {
 }
 
 func (s *Storage) Ping() (interface{}, error) {
+	stat := s.conn.Stat()
 	for _, c := range s.conn.AcquireAllIdle(context.Background()) {
 		c.Release()
 	}
-	return s.conn.Stat(), nil
+	return struct {
+		AcquireCount int64
+		AcquiredConns int32
+		AcquireDuration string
+		CanceledAcquireCount int64
+		ConstructingConns int32
+		EmptyAcquireCount int64
+		IdleConns int32
+		MaxConns int32
+		TotalConns int32
+	}{
+		AcquireCount: stat.AcquireCount(),
+		AcquiredConns: stat.AcquiredConns(),
+		AcquireDuration: string(stat.AcquireDuration()),
+		CanceledAcquireCount: stat.CanceledAcquireCount(),
+		ConstructingConns: stat.ConstructingConns(),
+		EmptyAcquireCount: stat.EmptyAcquireCount(),
+		IdleConns: stat.IdleConns(),
+		MaxConns: stat.MaxConns(),
+		TotalConns: stat.TotalConns(),
+	}, nil
 }
 
 func (s *Storage) Begin(writable bool) (pgx.Tx, error) {
