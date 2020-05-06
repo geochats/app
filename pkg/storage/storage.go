@@ -26,29 +26,29 @@ func (s *Storage) Ping() (interface{}, error) {
 		c.Release()
 	}
 	return struct {
-		AcquireCount int64
-		AcquiredConns int32
-		AcquireDuration string
+		AcquireCount         int64
+		AcquiredConns        int32
+		AcquireDuration      string
 		CanceledAcquireCount int64
-		ConstructingConns int32
-		EmptyAcquireCount int64
-		IdleConns int32
-		MaxConns int32
-		TotalConns int32
+		ConstructingConns    int32
+		EmptyAcquireCount    int64
+		IdleConns            int32
+		MaxConns             int32
+		TotalConns           int32
 	}{
-		AcquireCount: stat.AcquireCount(),
-		AcquiredConns: stat.AcquiredConns(),
-		AcquireDuration: string(stat.AcquireDuration()),
+		AcquireCount:         stat.AcquireCount(),
+		AcquiredConns:        stat.AcquiredConns(),
+		AcquireDuration:      string(stat.AcquireDuration()),
 		CanceledAcquireCount: stat.CanceledAcquireCount(),
-		ConstructingConns: stat.ConstructingConns(),
-		EmptyAcquireCount: stat.EmptyAcquireCount(),
-		IdleConns: stat.IdleConns(),
-		MaxConns: stat.MaxConns(),
-		TotalConns: stat.TotalConns(),
+		ConstructingConns:    stat.ConstructingConns(),
+		EmptyAcquireCount:    stat.EmptyAcquireCount(),
+		IdleConns:            stat.IdleConns(),
+		MaxConns:             stat.MaxConns(),
+		TotalConns:           stat.TotalConns(),
 	}, nil
 }
 
-func (s *Storage) Begin(writable bool) (pgx.Tx, error) {
+func (s *Storage) Begin(_ bool) (pgx.Tx, error) {
 	return s.conn.Begin(context.Background())
 	//access := pgx.ReadOnly
 	//if writable {
@@ -138,9 +138,9 @@ func (s *Storage) UpdatePoint(tx pgx.Tx, group *types.Point) error {
 	return nil
 }
 
-func (s *Storage) ListGroups(tx pgx.Tx) ([]types.Point, error) {
+func (s *Storage) ListPoints() ([]types.Point, error) {
 	points := make([]types.Point, 0)
-	rows, _ := tx.Query(
+	rows, _ := s.conn.Query(
 		context.Background(),
 		"SELECT chat_id, username, text, latitude, longitude, members_count, is_published, is_single FROM points LIMIT 10000")
 	for rows.Next() {

@@ -8,13 +8,13 @@ import (
 
 func (s *WebServer) handleList() http.HandlerFunc {
 	type respMarker struct {
-		ID           string      `json:"id"`
-		Username     string      `json:"username"`
-		Title        string      `json:"title"`
-		MembersCount int32       `json:"count"`
-		Latitude     float64     `json:"latitude"`
-		Longitude    float64     `json:"longitude"`
-		Text         string      `json:"description"`
+		ID           string  `json:"id"`
+		Username     string  `json:"username"`
+		Title        string  `json:"title"`
+		MembersCount int32   `json:"count"`
+		Latitude     float64 `json:"latitude"`
+		Longitude    float64 `json:"longitude"`
+		Text         string  `json:"description"`
 	}
 	type respSpec struct {
 		Groups []respMarker `json:"groups"`
@@ -34,12 +34,8 @@ func (s *WebServer) handleList() http.HandlerFunc {
 				points = append(points, f.Group())
 			}
 		} else {
-			tx, err := s.store.Begin(false)
-			if err != nil {
-				s.responseWithErrorJSON(w, fmt.Errorf("can't start transaction: %v", err))
-				return
-			}
-			points, err = s.store.ListGroups(tx)
+			var err error
+			points, err = s.store.ListPoints()
 			if err != nil {
 				s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
 				return
