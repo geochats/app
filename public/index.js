@@ -61,7 +61,6 @@ function buildMap(mapBoxToken, view, points, groups) {
         view: view
     });
     map.on('singleclick', function (evt) {
-        console.log(clusters);
         clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
             if (clusterFeatures.length === 0) {
                 showCreateModal(popupOverlay, popupContent, evt.coordinate);
