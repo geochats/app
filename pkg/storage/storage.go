@@ -20,11 +20,11 @@ func New(dsn string) (*Storage, error) {
 	return &Storage{conn: conn}, nil
 }
 
-func (s *Storage) IsReady() bool {
+func (s *Storage) Ping() (interface{}, error) {
 	for _, c := range s.conn.AcquireAllIdle(context.Background()) {
 		c.Release()
 	}
-	return true
+	return s.conn.Stat(), nil
 }
 
 func (s *Storage) Begin(writable bool) (pgx.Tx, error) {
