@@ -19,7 +19,7 @@
         }
         .modal-content {
             width: 90%;
-            max-width: 800px;
+            min-width: 360px;
         }
         .ol-popup {
             position: absolute;
@@ -29,8 +29,8 @@
             border-radius: 10px;
             border: 1px solid #cccccc;
             bottom: 12px;
-            left: -2000px;
-            min-width: 560px;
+            left: 10px;
+            min-width: 360px;
         }
         .ol-popup:after, .ol-popup:before {
             top: 100%;
@@ -71,12 +71,12 @@
     <a href="#" id="popup-closer" class="ol-popup-closer"></a>
     <div id="popup-content">
         <div class="content">
-            <h2>Хотите начать пикет или митинг в этом месте?</h2>
+            <h2>Хотите начать пикет?</h2>
             <ol>
                 <li class="content">
-                    <p>Чтобы создать пикет, Добавьте себе бота</p>
+                    <p>Чтобы создать пикет, добавьте себе бота</p>
                     <div class="buttons">
-                        <a href="https://t.me/miting_link_bot?start=1" target="_blank" class="button is-danger">Добавить бота</a>
+                        <a href="https://t.me/miting_link_bot?start=1" target="_blank" class="button is-danger">Добавить пикет</a>
                     </div>
                     <p>Чтобы создать митинг, добавьте бота в публичную группу митинга</p>
                     <div class="buttons">
@@ -92,7 +92,7 @@
                     <p><code>/text some text</code></p>
                 </li>
                 <li>
-                    <p>Опубликуйте пикет/митинг:</p>
+                    <p>Опубликуйте:</p>
                     <p><code>/show</code></p>
                 </li>
             </ol>

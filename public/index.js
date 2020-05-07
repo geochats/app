@@ -83,13 +83,27 @@ function buildMap(mapBoxToken, view, points, groups) {
         });
     });
 
+    Array.from(byClass("modal-close")).forEach(element => {
+        element.onclick = hideModals;
+    });
     Array.from(byClass("modal-background")).forEach(element => {
         element.onclick = hideModals;
     });
+
     popupCloser.onclick = function(){
         popupOverlay.setPosition(undefined);
         popupCloser.blur();
         return false;
+    };
+
+    document.onkeydown = function(evt) {
+        evt = evt || window.event;
+        console.log(evt.keyCode);
+        if (evt.keyCode === 27) {
+            popupOverlay.setPosition(undefined);
+            popupCloser.blur();
+            hideModals();
+        }
     };
 
     return map;
@@ -161,7 +175,7 @@ function byClass(cl) {
 }
 
 function loadData() {
-    return fetch('/list', {
+    return fetch('/list?random=1', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
