@@ -18,10 +18,15 @@ function prod-deploy() {
         exit
     fi
     helm upgrade geochats "${DIR}"/kubernetes \
+      --wait \
       --namespace geochats \
       --values "${DIR}"/kubernetes/values.yaml \
       --values "${DIR}"/kubernetes/values.prod.yaml \
       --set app.imageVersion="${1}"
+
+    echo '{"purge_everything":true}' | http \
+      POST 'https://api.cloudflare.com/client/v4/zones/65e46a7ce9de1774bb6098a8b1795c3e/purge_cache' \
+      "Authorization:Bearer ${CLOUDFLARE_TOKEN}"
 }
 
 bake_task local-psql "Run docker psql"
