@@ -1,4 +1,5 @@
 function buildMap(mapBoxToken, view, points, groups) {
+    const clusterDistance = 20;
     const popupContainer = byId('popup');
     const popupContent = byId('popup-content');
     const popupCloser = byId('popup-closer');
@@ -9,6 +10,7 @@ function buildMap(mapBoxToken, view, points, groups) {
             duration: 250
         }
     });
+    const closeModals = hideModalsFunction(popupOverlay, popupCloser);
 
     const picketStyle = buildSingleStyle();
     const groupStyleCache = {};
@@ -62,14 +64,10 @@ function buildMap(mapBoxToken, view, points, groups) {
     });
     map.on('singleclick', function (evt) {
         clusters.getFeatures(evt.pixel).then(function (clusterFeatures) {
+            closeModals();
             if (clusterFeatures.length === 0) {
                 showCreateModal(popupOverlay, popupContent, evt.coordinate);
             } else {
-                view.animate({
-                    center: clusterFeatures[0].getGeometry().getCoordinates(),
-                    zoom: view.getZoom() + 1,
-                    duration: 200
-                });
                 const features = clusterFeatures[0].get("features");
                 if (features.length === 1) {
                     if (features[0].get("group")) {
@@ -78,23 +76,24 @@ function buildMap(mapBoxToken, view, points, groups) {
                     if (features[0].get("point")) {
                         showPointModal(features[0].get('point'));
                     }
+                } else {
+                    view.animate({
+                        center: clusterFeatures[0].getGeometry().getCoordinates(),
+                        zoom: view.getZoom() + 1,
+                        duration: 200
+                    });
                 }
             }
         });
     });
 
     Array.from(byClass("modal-close")).forEach(element => {
-        element.onclick = hideModals;
+        element.onclick = closeModals;
     });
     Array.from(byClass("modal-background")).forEach(element => {
-        element.onclick = hideModals;
+        element.onclick = closeModals;
     });
-
-    popupCloser.onclick = function(){
-        popupOverlay.setPosition(undefined);
-        popupCloser.blur();
-        return false;
-    };
+    popupCloser.onclick = closeModals;
 
     document.onkeydown = function(evt) {
         evt = evt || window.event;
@@ -102,7 +101,7 @@ function buildMap(mapBoxToken, view, points, groups) {
         if (evt.keyCode === 27) {
             popupOverlay.setPosition(undefined);
             popupCloser.blur();
-            hideModals();
+            hideModalsFunction();
         }
     };
 
@@ -215,8 +214,12 @@ function showCreateModal(overlay, content, coordinate) {
     overlay.setPosition(coordinate);
 }
 
-function hideModals() {
-    Array.from(byClass("modal")).forEach(element => {
-        element.classList.remove("is-active");
-    });
+function hideModalsFunction(popupOverlay, popupCloser) {
+    return function() {
+        popupOverlay.setPosition(undefined);
+        popupCloser.blur();
+        Array.from(byClass("modal")).forEach(element => {
+            element.classList.remove("is-active");
+        });
+    }
 }

@@ -150,8 +150,6 @@
     const mapboxToken = 'pk.eyJ1Ijoia29yY2hhc2EiLCJhIjoiY2s5ZXRucnd3MDUxdDNwcnZmdDR5dGx6MiJ9.hD0hquMVIvL2CnZCD4o3fw';
     const initialCoords = [88.78367097860782, 60.317092090457066];
     const initialZoom = 4;
-    const clusterDistance = 30;
-    let points, groups;
 
     loadData().then(function (data) {
         const view = new ol.View({
