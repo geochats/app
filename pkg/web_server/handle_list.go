@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"geochats/pkg/types"
 	"net/http"
+	"os"
 )
 
 func (s *WebServer) handleList() http.HandlerFunc {
@@ -24,8 +25,14 @@ func (s *WebServer) handleList() http.HandlerFunc {
 		resp := new(respSpec)
 
 		points := make([]types.Point, 0)
-		if r.URL.Query().Get("random") != "" {
-			// TODO хорошо бы заменить на RandomStorage
+		var err error
+		points, err = s.store.ListPoints()
+		if err != nil {
+			s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
+			return
+		}
+
+		if os.Getenv("RANDOM_LIST") != "" {
 			f := types.NewRandomFixturer("fake")
 			for i := 0; i < 100; i++ {
 				points = append(points, f.Single())
@@ -33,14 +40,8 @@ func (s *WebServer) handleList() http.HandlerFunc {
 			for i := 0; i < 10; i++ {
 				points = append(points, f.Group())
 			}
-		} else {
-			var err error
-			points, err = s.store.ListPoints()
-			if err != nil {
-				s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
-				return
-			}
 		}
+
 		resp.Points = make([]respMarker, 0)
 		resp.Groups = make([]respMarker, 0)
 		for _, p := range points {
