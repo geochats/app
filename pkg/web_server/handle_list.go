@@ -23,10 +23,7 @@ func (s *WebServer) handleList() http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := new(respSpec)
-
-		points := make([]types.Point, 0)
-		var err error
-		points, err = s.store.ListPoints()
+		points, err := s.store.ListPoints()
 		if err != nil {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
 			return
