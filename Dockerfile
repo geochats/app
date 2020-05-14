@@ -65,7 +65,7 @@ RUN \
     go build -o app . && \
     echo "## Done"
 
-FROM golang:1.13.7-alpine3.11
+FROM alpine:3.11
 ENV \
     TMP_DIR=/app/tmp \
     PUBLIC_DIR=/app/public
@@ -77,6 +77,7 @@ COPY --from=build /bin/migrate  /bin/migrate
 RUN set -ex \
     apk add --no-cache gcc g++ zlib-dev openssl-dev libc6-compat && \
     apk add telegram-tdlib-static telegram-tdlib-dev --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted && \
+    rm -f /var/cache/apk/* && \
     ln -s /usr/include /usr/local/include && \
     rm -rf /usr/local/lib && \
     ln -s /usr/lib /usr/local/lib && \
