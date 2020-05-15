@@ -1,0 +1,31 @@
+{{template "base" .}}
+
+{{define "title"}}All meetings{{end}}
+{{define "css"}}{{end}}
+{{define "js"}}{{end}}
+
+{{define "body"}}
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Полный список</h1>
+            <ol>
+            {{ range . }}
+                <li class="message">
+                    <div class="message-body">
+                        <h2 class="title is-2">
+                            <a href="/points/{{ .ChatID }}/{{ .Text | human_url }}.html">
+                                {{ abbrev 60 .Text | md2html }}
+                            </a>
+                        </h2>
+                        <p class="content">
+                            {{ .Text | md2html }}
+                        </p>
+                    </div>
+                </li>
+            {{ end }}
+            </ol>
+        </div>
+    </section>
+{{end}}
+
+

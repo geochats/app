@@ -36,6 +36,7 @@ function local-psql() {
 
 bake_task local-run "Run docker psql"
 function local-run() {
+    source .env
     migrate -path ./db -database "postgres://${DB_USER}:${DB_PASS}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable" -verbose up
     go run ./main.go
 }

@@ -1,0 +1,23 @@
+{{template "base" .}}
+
+{{define "title"}}Все митинги{{end}}
+{{define "css"}}{{end}}
+{{define "js"}}{{end}}
+
+{{define "body"}}
+    <section class="section">
+        <div class="container">
+            <div class="content">
+                <h1 class="title">{{ abbrev 40 .Text | md2html }}</h1>
+                <p><a href="{{ .PublicURI }}">На карте</a></p>
+                <p>{{ .Text | md2html }}</p>
+                {{ if not .IsSingle }}
+                    <p><a href="https://t.me/{{ .Username }}" class="button is-danger">Join</a></p>
+                {{ end }}
+                <p><a href="/list.html" class="">Back to list</a></p>
+            </div>
+        </div>
+    </section>
+{{end}}
+
+

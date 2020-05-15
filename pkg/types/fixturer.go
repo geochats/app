@@ -24,7 +24,7 @@ func (f *Fixturer) Single() Point {
 		Username:  f.String("username"),
 		Latitude:  50 + 5*rand.NormFloat64(),
 		Longitude: 50 + 5*rand.NormFloat64(),
-		Text:      f.String("text"),
+		Text:      f.Markdown("single-text"),
 		Published: true,
 		IsSingle:  true,
 	}
@@ -37,7 +37,7 @@ func (f *Fixturer) Group() Point {
 		Latitude:     50 + 5*rand.NormFloat64(),
 		Longitude:    50 + 5*rand.NormFloat64(),
 		MembersCount: int32(rand.Intn(1000)),
-		Text:         f.String("desc"),
+		Text:         f.Markdown("group-text"),
 		Published:    true,
 		IsSingle:     false,
 	}
@@ -45,4 +45,16 @@ func (f *Fixturer) Group() Point {
 
 func (f *Fixturer) String(prefix string) string {
 	return fmt.Sprintf(`%s-%s`, f.name, prefix)
+}
+
+func (f *Fixturer) Markdown(prefix string) string {
+	return fmt.Sprintf("**%s**-*%s*\n\n%s", f.name, prefix, `
+Lorem *ipsum* dolor sit amet, _consectetur_ adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+`)
 }

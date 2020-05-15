@@ -138,11 +138,11 @@ func (s *Storage) UpdatePoint(tx pgx.Tx, group *types.Point) error {
 	return nil
 }
 
-func (s *Storage) ListPoints() ([]types.Point, error) {
+func (s *Storage) ListPublishedPoints() ([]types.Point, error) {
 	points := make([]types.Point, 0)
 	rows, _ := s.conn.Query(
 		context.Background(),
-		"SELECT chat_id, username, text, latitude, longitude, members_count, is_published, is_single FROM points LIMIT 10000")
+		"SELECT chat_id, username, text, latitude, longitude, members_count, is_published, is_single FROM points WHERE is_published = True LIMIT 10000")
 	for rows.Next() {
 		p := types.Point{}
 		err := rows.Scan(

@@ -3,9 +3,6 @@ package types
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/microcosm-cc/bluemonday"
 	"strings"
 )
 
@@ -20,18 +17,16 @@ type Point struct {
 	IsSingle     bool
 }
 
+func (p *Point) Title() string {
+	title := fmt.Sprintf("%.80s", p.Text)
+	title = strings.ReplaceAll(title, "/", "_")
+	title = strings.ReplaceAll(title, " ", "_")
+	return title
+}
+
 func (p *Point) HashedID() string {
 	h := sha256.Sum256([]byte(fmt.Sprintf("%d", p.ChatID)))
 	return fmt.Sprintf("%x", h)
-}
-
-func (p *Point) TextHTML() string {
-	flags := html.CommonFlags | html.SkipHTML
-	renderer := html.NewRenderer(html.RendererOptions{Flags: flags})
-	h := string(markdown.ToHTML([]byte(p.Text), nil, renderer))
-	replacer := strings.NewReplacer(">http://", ">", ">https://", ">")
-	h = replacer.Replace(h)
-	return bluemonday.UGCPolicy().Sanitize(h)
 }
 
 func (p *Point) PublicURI() string {

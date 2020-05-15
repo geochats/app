@@ -2,11 +2,17 @@ package web_server
 
 import (
 	"fmt"
+	"geochats/pkg/markdown"
 	"geochats/pkg/storage"
+	"github.com/Masterminds/sprig"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"html/template"
 	"net/http"
+	"net/url"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -28,9 +34,13 @@ func New(addr string, documentRootDir string, store *storage.Storage, logger *lo
 
 func (s *WebServer) router() http.Handler {
 	r := mux.NewRouter()
-	r.HandleFunc("/list", s.handleList()).Methods("GET")
+	r.HandleFunc("/list.json", s.handleListJSON()).Methods("GET")
+	r.HandleFunc("/list.html", s.handleListHTML()).Methods("GET")
+	r.HandleFunc("/points/{hashID}/{title}.html", s.handlePointHTML()).Methods("GET")
 	r.HandleFunc("/health", s.handleHealth()).Methods("GET")
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(s.docRootDir))).Methods("GET")
+	r.HandleFunc("/sitemap.xml", s.handleSitemap()).Methods("GET")
+	r.HandleFunc("/", s.handleIndex()).Methods("GET")
+	r.PathPrefix("/static").Handler(http.FileServer(http.Dir(s.docRootDir))).Methods("GET")
 	return r
 }
 
@@ -46,4 +56,28 @@ func (s *WebServer) Listen() error {
 		return fmt.Errorf("can't start web server: %v", err)
 	}
 	return nil
+}
+
+func (s *WebServer) parseTemplate(templateFiles ...string) *template.Template {
+	functions := sprig.GenericFuncMap()
+
+	reg, err := regexp.Compile("[^a-zA-Z0-9_]+")
+	if err != nil {
+		logrus.Panic(err)
+	}
+	functions["human_url"] = func(text string) string {
+		if len(text) > 40 {
+			text = text[0:40]
+		}
+		text = reg.ReplaceAllString(text, "")
+		text = strings.ReplaceAll(text, "__", "_")
+		return url.QueryEscape(text)
+	}
+	functions["md2html"] = func(md string) template.HTML {
+		return template.HTML(markdown.ToHTML(md))
+	}
+	return template.Must(
+		template.New("base").
+			Funcs(functions).
+			ParseFiles(templateFiles...))
 }

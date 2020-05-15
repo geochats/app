@@ -174,7 +174,7 @@ function byClass(cl) {
 }
 
 function loadData() {
-    return fetch('/list', {
+    return fetch('/list.json', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

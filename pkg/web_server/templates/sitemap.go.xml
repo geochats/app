@@ -1,0 +1,16 @@
+{{ define "base" }}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>http://miting.link/</loc>
+    </url>
+    <url>
+        <loc>http://miting.link/list.html</loc>
+    </url>
+    {{ range . }}
+    <url>
+        <loc>http://miting.link/points/{{ .ChatID }}/{{ trunc 20 .Text | human_url }}.html</loc>
+    </url>
+    {{ end }}
+</urlset>
+{{ end }}

@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: miting.link/sitemap.xml

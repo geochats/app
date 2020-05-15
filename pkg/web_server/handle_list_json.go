@@ -2,12 +2,13 @@ package web_server
 
 import (
 	"fmt"
+	"geochats/pkg/markdown"
 	"geochats/pkg/types"
 	"net/http"
 	"os"
 )
 
-func (s *WebServer) handleList() http.HandlerFunc {
+func (s *WebServer) handleListJSON() http.HandlerFunc {
 	type respMarker struct {
 		ID           string  `json:"id"`
 		Username     string  `json:"username"`
@@ -21,9 +22,10 @@ func (s *WebServer) handleList() http.HandlerFunc {
 		Groups []respMarker `json:"groups"`
 		Points []respMarker `json:"points"`
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		resp := new(respSpec)
-		points, err := s.store.ListPoints()
+		points, err := s.store.ListPublishedPoints()
 		if err != nil {
 			s.responseWithErrorJSON(w, fmt.Errorf("can't get points list: %v", err))
 			return
@@ -52,7 +54,7 @@ func (s *WebServer) handleList() http.HandlerFunc {
 					Title:     "",
 					Latitude:  p.Latitude,
 					Longitude: p.Longitude,
-					Text:      p.TextHTML(),
+					Text:      markdown.ToHTML(p.Text),
 				})
 			} else {
 				resp.Groups = append(resp.Groups, respMarker{
@@ -61,7 +63,7 @@ func (s *WebServer) handleList() http.HandlerFunc {
 					Latitude:     p.Latitude,
 					Longitude:    p.Longitude,
 					MembersCount: p.MembersCount,
-					Text:         p.TextHTML(),
+					Text:         markdown.ToHTML(p.Text),
 				})
 			}
 		}

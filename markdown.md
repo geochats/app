@@ -39,7 +39,7 @@ Strikethrough uses two tildes. ~~Scratch this.~~
 
 [I'm a reference-style link][Arbitrary case-insensitive reference text]
 
-[I'm a relative reference to a repository file](public/index.js)
+[I'm a relative reference to a repository file](public/static/index.js)
 
 [You can use numbers for reference-style link definitions][1]
 
