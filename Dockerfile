@@ -85,4 +85,5 @@ RUN set -ex \
     mkdir -p ${TMP_DIR} && \
     chown -R nobody:nobody ${TMP_DIR}
 USER nobody:nobody
-CMD /app/app
+WORKDIR /app
+CMD ./app
