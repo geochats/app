@@ -27,6 +27,7 @@ func (s *WebServer) handleSitemap() http.HandlerFunc {
 			}
 		}
 
+		w.Header().Set("Content-Type", "application/xml")
 		if err := ts.Execute(w, points); err != nil {
 			logrus.Error(err.Error())
 			http.Error(w, "Internal Server Error", 500)
