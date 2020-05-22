@@ -72,7 +72,6 @@ ENV \
 COPY --from=build /etc/localtime /etc/localtime
 COPY --from=build /app/app /app/app
 COPY --from=build /app/public /app/public
-COPY --from=build /app/pkg/web_server/templates /app/pkg/web_server/templates
 COPY --from=build /app/db  /migrations
 COPY --from=build /bin/migrate  /bin/migrate
 RUN set -ex \

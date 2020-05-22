@@ -10,8 +10,8 @@ import (
 
 func (s *WebServer) handlePointHTML() http.HandlerFunc {
 	ts := s.parseTemplate(
-		"./pkg/web_server/templates/point.go.html",
-		"./pkg/web_server/templates/layout.go.html",
+		"./public/point.go.html",
+		"./public/layout.go.html",
 	)
 	return func(w http.ResponseWriter, r *http.Request) {
 		hashID := mux.Vars(r)["hashID"]

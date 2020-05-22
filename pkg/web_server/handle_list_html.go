@@ -10,8 +10,8 @@ import (
 
 func (s *WebServer) handleListHTML() http.HandlerFunc {
 	ts := s.parseTemplate(
-		"./pkg/web_server/templates/list.go.html",
-		"./pkg/web_server/templates/layout.go.html",
+		"./public/list.go.html",
+		"./public/layout.go.html",
 	)
 	return func(w http.ResponseWriter, r *http.Request) {
 		points, err := s.store.ListPublishedPoints()

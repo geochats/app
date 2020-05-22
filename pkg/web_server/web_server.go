@@ -58,7 +58,7 @@ func (s *WebServer) Listen() error {
 	return nil
 }
 
-func (s *WebServer) parseTemplate(templateFiles ...string) *template.Template {
+func (s *WebServer) templateFunctions() map[string]interface{} {
 	functions := sprig.GenericFuncMap()
 
 	reg, err := regexp.Compile("[^a-zA-Z0-9_]+")
@@ -76,8 +76,12 @@ func (s *WebServer) parseTemplate(templateFiles ...string) *template.Template {
 	functions["md2html"] = func(md string) template.HTML {
 		return template.HTML(markdown.ToHTML(md))
 	}
+	return functions
+}
+
+func (s *WebServer) parseTemplate(templateFiles ...string) *template.Template {
 	return template.Must(
 		template.New("base").
-			Funcs(functions).
+			Funcs(s.templateFunctions()).
 			ParseFiles(templateFiles...))
 }
